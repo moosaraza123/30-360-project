@@ -1,0 +1,54 @@
+// ═══════════════════════════════════════════════════════════════
+// Design System — Navy / Gold
+// ═══════════════════════════════════════════════════════════════
+
+// CSS Custom Properties (available globally after Bootstrap import)
+:root {
+    --navy-dark:   #0f172a;
+    --navy-mid:    #1e3a5f;
+    --navy-light:  #2d5a8e;
+    --gold:        #c9a227;
+    --gold-dark:   #a07d18;
+    --gold-light:  #e8c547;
+    --off-white:   #f8fafc;
+    --slate:       #475569;
+    --slate-light: #94a3b8;
+}
+
+// ── Bootstrap Variable Overrides ──────────────────────────────
+$primary:   #1e3a5f;          // Navy — replaces Bootstrap blue
+$secondary: #c9a227;          // Gold — replaces sky blue
+$success:   #10b981;
+$info:      #c9a227;          // Gold for info too
+$warning:   #f59e0b;
+$danger:    #ef4444;
+
+$body-bg:    #f8fafc;
+$body-color: #1e293b;
+
+$font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+$headings-font-family:   'Inter', $font-family-sans-serif;
+$headings-font-weight:   700;
+$headings-color:         #0f172a;
+$font-family-monospace:  'JetBrains Mono', 'Courier New', monospace;
+
+$border-radius:    0.5rem;
+$border-radius-lg: 0.75rem;
+$border-radius-sm: 0.375rem;
+
+$box-shadow:    0 1px 3px 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.05);
+$box-shadow-lg: 0 10px 25px -5px rgba(0,0,0,.12), 0 4px 6px -2px rgba(0,0,0,.05);
+
+$btn-font-weight: 600;
+$card-border-color: #e2e8f0;
+$card-box-shadow: $box-shadow;
+
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Custom Component Styles
+@import 'components/calculator';
+@import 'components/results';
+@import 'components/comparison';
+@import 'components/sidebar';
+@import 'components/theme';

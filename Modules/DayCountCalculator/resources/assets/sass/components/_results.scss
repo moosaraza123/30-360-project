@@ -1,0 +1,107 @@
+// Results Component Styles
+
+.results-container {
+    margin-top: 2rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-card {
+    background: white;
+    border-radius: $border-radius-lg;
+    padding: 2rem;
+    box-shadow: $box-shadow-lg;
+    margin-bottom: 1.5rem;
+}
+
+.result-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .result-item {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($secondary, 0.05) 100%);
+        border-radius: $border-radius;
+
+        .result-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-family: $font-family-monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: $primary;
+        }
+    }
+}
+
+.calculation-steps {
+    .step-item {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-left: 4px solid $secondary;
+        background: #f8fafc;
+        border-radius: 0 $border-radius $border-radius 0;
+
+        &.applied {
+            border-left-color: $success;
+            background: rgba($success, 0.05);
+        }
+
+        &.not-applied {
+            border-left-color: #cbd5e1;
+            background: #f1f5f9;
+            opacity: 0.7;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: $body-color;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-description {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .step-formula {
+            font-family: $font-family-monospace;
+            font-size: 0.875rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: $border-radius-sm;
+            margin-top: 0.5rem;
+        }
+    }
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+
+    .btn {
+        flex: 1 1 auto;
+        min-width: 150px;
+    }
+}

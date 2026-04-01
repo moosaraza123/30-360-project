@@ -1,0 +1,136 @@
+// Educational Sidebar Styles
+
+.educational-sidebar {
+    position: sticky;
+    top: 2rem;
+
+    .sidebar-card {
+        background: white;
+        border-radius: $border-radius-lg;
+        padding: 1.5rem;
+        box-shadow: $box-shadow-lg;
+        margin-bottom: 1.5rem;
+    }
+
+    .sidebar-title {
+        font-family: $headings-font-family;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: $primary;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba($primary, 0.1);
+    }
+
+    .convention-info {
+        .info-section {
+            margin-bottom: 1rem;
+
+            .info-label {
+                font-weight: 600;
+                color: $body-color;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 0.5rem;
+            }
+
+            .info-content {
+                font-size: 0.875rem;
+                color: #64748b;
+                line-height: 1.6;
+            }
+
+            .formula-display {
+                font-family: $font-family-monospace;
+                background: #f8fafc;
+                padding: 0.75rem;
+                border-radius: $border-radius-sm;
+                font-size: 0.875rem;
+                border-left: 3px solid $primary;
+            }
+        }
+    }
+
+    .quick-tips {
+        .tip-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: $border-radius-sm;
+            margin-bottom: 0.75rem;
+
+            .tip-icon {
+                flex-shrink: 0;
+                width: 1.5rem;
+                height: 1.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: $primary;
+                color: white;
+                border-radius: 50%;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            .tip-text {
+                font-size: 0.875rem;
+                color: #64748b;
+                line-height: 1.5;
+            }
+        }
+    }
+
+    .recent-calculations {
+        .calculation-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:hover {
+                background: #f8fafc;
+                transform: translateX(4px);
+            }
+
+            .calc-convention {
+                font-size: 0.75rem;
+                color: $primary;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .calc-dates {
+                font-family: $font-family-monospace;
+                font-size: 0.75rem;
+                color: #64748b;
+                margin-top: 0.25rem;
+            }
+
+            .calc-result {
+                font-family: $font-family-monospace;
+                font-weight: 600;
+                color: $body-color;
+                margin-top: 0.25rem;
+            }
+        }
+    }
+}
+
+// AdSense Placeholder
+.adsense-placeholder {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: $border-radius;
+    padding: 1rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}

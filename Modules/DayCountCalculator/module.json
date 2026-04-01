@@ -1,0 +1,11 @@
+{
+    "name": "DayCountCalculator",
+    "alias": "daycountcalculator",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DayCountCalculator\\Providers\\DayCountCalculatorServiceProvider"
+    ],
+    "files": []
+}

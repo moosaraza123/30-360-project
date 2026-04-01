@@ -9,11 +9,41 @@
 
     <meta name="description" content="@yield('meta_description', 'Professional day count convention calculator for financial instruments. Calculate 30/360, Actual/365, Actual/360, and more with step-by-step explanations.')">
     <meta name="keywords" content="@yield('meta_keywords', 'day count calculator, 30/360, actual/365, bond calculator, interest calculator, financial calculator')">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
 
-    <meta property="og:title" content="@yield('og_title', 'Day Count Calculator')">
-    <meta property="og:description" content="@yield('og_description', 'Professional day count convention calculator')">
+    <meta property="og:title" content="@yield('og_title', 'Day Count Calculator — Professional Financial Calculator')">
+    <meta property="og:description" content="@yield('og_description', 'Professional day count convention calculator for bonds, loans, and derivatives. Calculate 30/360, Actual/365, Actual/360 and more.')">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
+    <meta property="og:site_name" content="30/360 Day Count Calculator">
+    <meta property="og:image" content="{{ asset('images/og-image.png') }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', 'Day Count Calculator — Professional Financial Calculator')">
+    <meta name="twitter:description" content="@yield('og_description', 'Professional day count convention calculator for bonds, loans, and derivatives.')">
+    <meta name="twitter:image" content="{{ asset('images/og-image.png') }}">
+
+    @hasSection('structured_data')
+        @yield('structured_data')
+    @else
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "30/360 Day Count Calculator",
+        "url": "{{ url('/calculator') }}",
+        "description": "Professional day count convention calculator for financial instruments including bonds, loans, and derivatives.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

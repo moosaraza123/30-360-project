@@ -27,7 +27,13 @@ class User extends Authenticatable
         'company',
         'job_title',
         'country',
+        'role',
     ];
+
+    // Role constants
+    const ROLE_USER = 'user';
+    const ROLE_ADMIN = 'admin';
+    const ROLE_SUPER_ADMIN = 'super_admin';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -63,5 +69,29 @@ class User extends Authenticatable
     public function savedCalculations()
     {
         return $this->hasMany(SavedCalculation::class);
+    }
+
+    /**
+     * Check if user is an admin (admin or super_admin).
+     */
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN]);
+    }
+
+    /**
+     * Check if user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 }

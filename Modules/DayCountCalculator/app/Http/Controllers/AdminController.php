@@ -3,6 +3,8 @@
 namespace Modules\DayCountCalculator\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Modules\DayCountCalculator\Entities\SavedCalculation;
 use Modules\DayCountCalculator\Repositories\CalculationRepository;
 use Modules\DayCountCalculator\Repositories\SubscriberRepository;
 
@@ -33,14 +35,41 @@ class AdminController extends Controller
         $calculationsTimeline = $this->calculationRepository->getCalculationsTimeline(30);
         $subscriberGrowth = $this->subscriberRepository->getGrowthTimeline(30);
 
+        $userStats = $this->getUserStats();
+
         return view('daycountcalculator::admin.dashboard', [
             'calculationStats' => $calculationStats,
             'subscriberStats' => $subscriberStats,
+            'userStats' => $userStats,
             'popularConventions' => $popularConventions,
             'conventionDistribution' => $conventionDistribution,
             'calculationsTimeline' => $calculationsTimeline,
             'subscriberGrowth' => $subscriberGrowth,
         ]);
+    }
+
+    /**
+     * Gather registered user statistics
+     */
+    private function getUserStats(): array
+    {
+        $total = User::where('role', User::ROLE_USER)->count();
+        $totalToday = User::where('role', User::ROLE_USER)->whereDate('created_at', today())->count();
+        $totalThisWeek = User::where('role', User::ROLE_USER)->where('created_at', '>=', now()->startOfWeek())->count();
+        $totalThisMonth = User::where('role', User::ROLE_USER)->where('created_at', '>=', now()->startOfMonth())->count();
+        $lastWeek = User::where('role', User::ROLE_USER)->whereBetween('created_at', [
+            now()->subWeek()->startOfWeek(),
+            now()->subWeek()->endOfWeek(),
+        ])->count();
+
+        return [
+            'total' => $total,
+            'today' => $totalToday,
+            'this_week' => $totalThisWeek,
+            'this_month' => $totalThisMonth,
+            'week_change' => $lastWeek > 0 ? round((($totalThisWeek - $lastWeek) / $lastWeek) * 100) : null,
+            'saved_calculations' => SavedCalculation::count(),
+        ];
     }
 
     /**

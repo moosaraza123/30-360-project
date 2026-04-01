@@ -1,303 +1,237 @@
 @extends('daycountcalculator::layouts.master')
 
-@section('title', 'Calculation Analytics')
+@section('title', 'Calculations — Admin')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
+<div class="admin-shell">
+
+    @include('daycountcalculator::admin.partials.sidebar')
+
+    <main class="admin-main">
+
+        <div class="admin-page-header">
             <div>
-                <h1 class="h3 fw-bold">Calculation Analytics</h1>
-                <p class="text-muted mb-0">Detailed calculation statistics and trends</p>
+                <h1 class="admin-page-title">Calculations</h1>
+                <p class="admin-page-subtitle">Analytics & convention usage</p>
             </div>
-            <div>
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Dashboard
-                </a>
-                <a href="{{ route('admin.export', 'calculations') }}" class="btn btn-primary">
-                    <i class="bi bi-download"></i> Export Data
-                </a>
-            </div>
+            <a href="{{ route('admin.export', 'calculations') }}" class="btn btn-gold btn-sm px-3">
+                <i class="bi bi-download me-1"></i>Export CSV
+            </a>
         </div>
-    </div>
 
-    <!-- Statistics Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">Total Calculations</h6>
-                    <h2 class="fw-bold text-primary">{{ number_format($stats['total_calculations']) }}</h2>
+        {{-- KPI Row --}}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(201,162,39,.12);color:#c9a227;"><i class="bi bi-calculator-fill"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Total</div>
+                        <div class="kpi-value">{{ number_format($stats['total_calculations']) }}</div>
+                        <div class="kpi-sub text-muted">{{ number_format($stats['today']) }} today</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(99,102,241,.12);color:#6366f1;"><i class="bi bi-person-check-fill"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">By Users</div>
+                        <div class="kpi-value">{{ number_format($stats['auth_calculations']) }}</div>
+                        <div class="kpi-sub text-muted">{{ number_format($stats['unique_users']) }} unique</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;"><i class="bi bi-incognito"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">By Guests</div>
+                        <div class="kpi-value">{{ number_format($stats['guest_calculations']) }}</div>
+                        <div class="kpi-sub text-muted">{{ number_format($stats['unique_sessions']) }} sessions</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(16,185,129,.12);color:#10b981;"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">This Month</div>
+                        <div class="kpi-value">{{ number_format($stats['this_month']) }}</div>
+                        <div class="kpi-sub text-muted">{{ number_format($stats['this_week']) }} this week</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">Unique Users</h6>
-                    <h2 class="fw-bold text-success">{{ number_format($stats['total_users']) }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">This Week</h6>
-                    <h2 class="fw-bold text-info">{{ number_format($stats['this_week']) }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">This Month</h6>
-                    <h2 class="fw-bold text-warning">{{ number_format($stats['this_month']) }}</h2>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Timeline Chart -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">Calculations Timeline (Last 90 Days)</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="timelineChart" height="60"></canvas>
-                </div>
+        {{-- Timeline Chart --}}
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">Calculations Timeline — Last 90 Days</div>
+            <div class="admin-card-body">
+                <canvas id="timelineChart" height="70"></canvas>
             </div>
         </div>
-    </div>
 
-    <!-- Convention Analysis -->
-    <div class="row g-4">
-        <!-- Popular Conventions Table -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">Popular Conventions (Last 30 Days)</h5>
-                </div>
-                <div class="card-body">
+        {{-- Convention Analysis --}}
+        <div class="row g-3 mb-4">
+            {{-- Popular Conventions Table --}}
+            <div class="col-lg-6">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">Popular Conventions (Last 30 Days)</div>
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="admin-data-table">
                             <thead>
                                 <tr>
-                                    <th>Rank</th>
+                                    <th>#</th>
                                     <th>Convention</th>
-                                    <th class="text-end">Count</th>
-                                    <th class="text-end">% of Total</th>
+                                    <th style="text-align:right;">Uses</th>
+                                    <th style="text-align:right;">Share</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $total = array_sum($popularConventions);
-                                    $rank = 1;
-                                @endphp
-                                @foreach($popularConventions as $convention => $count)
+                                @php $total = array_sum($popularConventions) ?: 1; $rank = 0; @endphp
+                                @forelse($popularConventions as $convention => $count)
+                                    @php $rank++; @endphp
                                     <tr>
                                         <td>
-                                            @if($rank === 1)
-                                                <i class="bi bi-trophy-fill text-warning"></i>
-                                            @elseif($rank === 2)
-                                                <i class="bi bi-trophy-fill text-secondary"></i>
-                                            @elseif($rank === 3)
-                                                <i class="bi bi-trophy-fill" style="color: #CD7F32;"></i>
-                                            @else
-                                                {{ $rank }}
+                                            @if($rank === 1) <i class="bi bi-trophy-fill" style="color:#c9a227;"></i>
+                                            @elseif($rank === 2) <i class="bi bi-trophy-fill" style="color:#94a3b8;"></i>
+                                            @elseif($rank === 3) <i class="bi bi-trophy-fill" style="color:#b45309;"></i>
+                                            @else <span style="color:#cbd5e1;font-size:.78rem;">{{ $rank }}</span>
                                             @endif
                                         </td>
                                         <td><strong>{{ $convention }}</strong></td>
-                                        <td class="text-end">{{ number_format($count) }}</td>
-                                        <td class="text-end">
-                                            <span class="badge bg-primary">{{ $total > 0 ? number_format(($count / $total) * 100, 1) : 0 }}%</span>
-                                        </td>
+                                        <td style="text-align:right;">{{ number_format($count) }}</td>
+                                        <td style="text-align:right;"><span class="badge-stat">{{ number_format(($count / $total) * 100, 1) }}%</span></td>
                                     </tr>
-                                    @php $rank++; @endphp
-                                @endforeach
+                                @empty
+                                    <tr><td colspan="4" class="text-center py-4 text-muted">No data yet</td></tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Convention Distribution Chart -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 fw-bold">All-Time Distribution</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="distributionChart" height="150"></canvas>
+            {{-- Distribution Chart --}}
+            <div class="col-lg-6">
+                <div class="admin-card h-100">
+                    <div class="admin-card-header">All-Time Distribution</div>
+                    <div class="admin-card-body">
+                        <canvas id="distributionChart" height="150"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Insights -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-info">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">
-                        <i class="bi bi-lightbulb text-info"></i> Key Insights
-                    </h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <ul class="mb-0">
-                                @php
-                                    $mostPopular = array_key_first($popularConventions);
-                                    $avgPerDay = $stats['total_calculations'] > 0 ? round($stats['total_calculations'] / 30) : 0;
-                                @endphp
-                                <li class="mb-2">
-                                    <strong>Most Popular Convention:</strong> {{ $mostPopular }}
-                                    ({{ number_format($popularConventions[$mostPopular]) }} uses in last 30 days)
-                                </li>
-                                <li class="mb-2">
-                                    <strong>Average Daily Calculations:</strong> ~{{ number_format($avgPerDay) }} per day
-                                </li>
-                                <li>
-                                    <strong>User Engagement:</strong>
-                                    {{ $stats['total_users'] > 0 ? number_format($stats['total_calculations'] / $stats['total_users'], 1) : 0 }}
-                                    calculations per user
-                                </li>
-                            </ul>
+        {{-- Key Insights --}}
+        <div class="admin-card">
+            <div class="admin-card-header">Key Insights</div>
+            <div class="admin-card-body">
+                <div class="row g-3">
+                    @php
+                        $mostPopular = array_key_first($popularConventions ?? []);
+                        $avgPerDay = $stats['avg_per_day_30d'] ?? 0;
+                        $engagementRate = $stats['unique_users'] > 0
+                            ? number_format($stats['total_calculations'] / $stats['unique_users'], 1)
+                            : '—';
+                    @endphp
+                    <div class="col-md-4">
+                        <div class="insight-block">
+                            <div class="insight-label">Most Used Convention</div>
+                            <div class="insight-value">{{ $mostPopular ?? '—' }}</div>
+                            @if($mostPopular && isset($popularConventions[$mostPopular]))
+                                <div class="insight-sub">{{ number_format($popularConventions[$mostPopular]) }} uses in last 30 days</div>
+                            @endif
                         </div>
-                        <div class="col-md-6">
-                            <ul class="mb-0">
-                                <li class="mb-2">
-                                    <strong>Growth This Week:</strong>
-                                    {{ $stats['this_week'] }} calculations
-                                    @if($stats['this_week'] > 0)
-                                        <span class="text-success"><i class="bi bi-arrow-up"></i></span>
-                                    @endif
-                                </li>
-                                <li class="mb-2">
-                                    <strong>Monthly Trend:</strong>
-                                    {{ $stats['this_month'] }} calculations this month
-                                </li>
-                                <li>
-                                    <strong>Total Conventions:</strong> {{ count($distribution) }} different conventions used
-                                </li>
-                            </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="insight-block">
+                            <div class="insight-label">Avg Daily Calculations (30d)</div>
+                            <div class="insight-value">{{ $avgPerDay }}</div>
+                            <div class="insight-sub">per day on average</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="insight-block">
+                            <div class="insight-label">Avg per Registered User</div>
+                            <div class="insight-value">{{ $engagementRate }}</div>
+                            <div class="insight-sub">calculations per user (all-time)</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
+    </main>
 </div>
 @endsection
 
+@push('styles')
+@include('daycountcalculator::admin.partials.styles')
+<style>
+.admin-data-table { width:100%; border-collapse:collapse; }
+.admin-data-table th { padding:.625rem 1.25rem; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94a3b8; border-bottom:1px solid #f1f5f9; background:#fafafa; }
+.admin-data-table td { padding:.65rem 1.25rem; font-size:.83rem; color:#475569; border-bottom:1px solid #f8fafc; }
+.admin-data-table tr:last-child td { border-bottom:none; }
+
+.insight-block { background:#f8fafc; border-radius:.75rem; padding:1rem 1.25rem; }
+.insight-label { font-size:.72rem; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.3rem; }
+.insight-value { font-size:1.5rem; font-weight:800; color:#0f172a; line-height:1.1; margin-bottom:.2rem; }
+.insight-sub { font-size:.75rem; color:#94a3b8; }
+</style>
+@endpush
+
 @push('scripts')
 <script>
-    // Timeline Chart
-    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
-    const timelineData = @json($timeline);
-    new Chart(timelineCtx, {
-        type: 'line',
-        data: {
-            labels: Object.keys(timelineData),
-            datasets: [{
-                label: 'Daily Calculations',
-                data: Object.values(timelineData),
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointRadius: 3,
-                pointHoverRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    },
-                    title: {
-                        display: true,
-                        text: 'Number of Calculations'
-                    }
-                },
-                x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                }
-            }
-        }
-    });
+const GOLD = '#c9a227', SLATE = '#64748b';
 
-    // Distribution Chart
-    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
-    const distributionData = @json($distribution);
-    new Chart(distributionCtx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(distributionData),
-            datasets: [{
-                label: 'Total Uses',
-                data: Object.values(distributionData),
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(14, 165, 233, 0.8)',
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(251, 191, 36, 0.8)',
-                    'rgba(245, 158, 11, 0.8)',
-                    'rgba(239, 68, 68, 0.8)',
-                    'rgba(168, 85, 247, 0.8)',
-                    'rgba(236, 72, 153, 0.8)',
-                    'rgba(148, 163, 184, 0.8)'
-                ],
-                borderColor: [
-                    'rgb(59, 130, 246)',
-                    'rgb(14, 165, 233)',
-                    'rgb(16, 185, 129)',
-                    'rgb(251, 191, 36)',
-                    'rgb(245, 158, 11)',
-                    'rgb(239, 68, 68)',
-                    'rgb(168, 85, 247)',
-                    'rgb(236, 72, 153)',
-                    'rgb(148, 163, 184)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            indexAxis: 'y',
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
-            }
+new Chart(document.getElementById('timelineChart'), {
+    type: 'line',
+    data: {
+        labels: Object.keys(@json($timeline)),
+        datasets: [{
+            label: 'Calculations',
+            data: Object.values(@json($timeline)),
+            borderColor: GOLD,
+            backgroundColor: 'rgba(201,162,39,.08)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 2,
+            pointBackgroundColor: GOLD,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { precision: 0, color: SLATE, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+            x: { ticks: { color: SLATE, font: { size: 10 }, maxRotation: 45 }, grid: { display: false } }
         }
-    });
+    }
+});
+
+new Chart(document.getElementById('distributionChart'), {
+    type: 'bar',
+    data: {
+        labels: Object.keys(@json($distribution)),
+        datasets: [{
+            data: Object.values(@json($distribution)),
+            backgroundColor: ['#c9a227','#0f172a','#1e3a5f','#2563eb','#64748b','#94a3b8','#f59e0b','#10b981','#6366f1'],
+            borderRadius: 4,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, ticks: { precision: 0, color: SLATE, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+            y: { ticks: { color: SLATE, font: { size: 11 } }, grid: { display: false } }
+        }
+    }
+});
 </script>
 @endpush

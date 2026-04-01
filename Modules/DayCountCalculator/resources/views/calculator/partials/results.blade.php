@@ -74,6 +74,19 @@
             </div>
         </div>
 
+        {{-- Guest signup CTA --}}
+        @guest
+        <div class="alert mt-4 mb-0 d-flex align-items-center gap-3"
+             style="background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:.625rem;padding:.875rem 1.25rem;">
+            <i class="bi bi-bookmark-star-fill flex-shrink-0" style="color:#c9a227;font-size:1.25rem;"></i>
+            <div class="flex-grow-1">
+                <div class="fw-semibold" style="font-size:.875rem;color:#0f172a;">Sign up to save your calculations</div>
+                <div class="text-muted" style="font-size:.8rem;">Create a free account to save, name, and revisit any calculation.</div>
+            </div>
+            <a href="{{ route('register') }}" class="btn btn-gold btn-sm flex-shrink-0 px-3">Sign Up Free</a>
+        </div>
+        @endguest
+
         {{-- Action Buttons --}}
         <div class="row g-2 mt-4">
             <div class="col-6 col-md-3">

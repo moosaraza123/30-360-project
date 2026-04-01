@@ -82,13 +82,33 @@ class CalculationRepository
      */
     public function getStatistics(): array
     {
+        $todayCount = Calculation::whereDate('created_at', today())->count();
+        $yesterdayCount = Calculation::whereDate('created_at', today()->subDay())->count();
+        $thisWeek = Calculation::where('created_at', '>=', now()->startOfWeek())->count();
+        $lastWeek = Calculation::whereBetween('created_at', [
+            now()->subWeek()->startOfWeek(),
+            now()->subWeek()->endOfWeek(),
+        ])->count();
+
         return [
             'total_calculations' => Calculation::count(),
+            'auth_calculations' => Calculation::whereNotNull('user_id')->count(),
+            'guest_calculations' => Calculation::whereNull('user_id')->count(),
+            'unique_users' => Calculation::whereNotNull('user_id')->distinct('user_id')->count(),
+            'unique_sessions' => Calculation::whereNull('user_id')->whereNotNull('session_id')->distinct('session_id')->count(),
+            // kept for backward compat
             'total_users' => Calculation::whereNotNull('user_id')->distinct('user_id')->count(),
-            'total_sessions' => Calculation::whereNotNull('session_id')->distinct('session_id')->count(),
-            'today' => Calculation::whereDate('created_at', today())->count(),
-            'this_week' => Calculation::where('created_at', '>=', now()->startOfWeek())->count(),
+            'total_sessions' => Calculation::whereNull('user_id')->whereNotNull('session_id')->distinct('session_id')->count(),
+            'today' => $todayCount,
+            'yesterday' => $yesterdayCount,
+            'today_change' => $yesterdayCount > 0 ? round((($todayCount - $yesterdayCount) / $yesterdayCount) * 100) : null,
+            'this_week' => $thisWeek,
+            'last_week' => $lastWeek,
+            'week_change' => $lastWeek > 0 ? round((($thisWeek - $lastWeek) / $lastWeek) * 100) : null,
             'this_month' => Calculation::where('created_at', '>=', now()->startOfMonth())->count(),
+            'avg_per_day_30d' => (int) round(
+                Calculation::where('created_at', '>=', now()->subDays(30))->count() / 30
+            ),
         ];
     }
 

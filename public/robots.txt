@@ -1,2 +1,19 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Block admin and auth pages from indexing
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /calculator/saved
+Disallow: /profile
+
+# Block internal/API-like endpoints
+Disallow: /calculator/save/
+Disallow: /calculator/calculate
+Disallow: /comparison/calculate
+Disallow: /comparison/export/
+Disallow: /subscribe

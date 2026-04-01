@@ -5,6 +5,7 @@ use Modules\DayCountCalculator\Http\Controllers\CalculatorController;
 use Modules\DayCountCalculator\Http\Controllers\ComparisonController;
 use Modules\DayCountCalculator\Http\Controllers\SubscriberController;
 use Modules\DayCountCalculator\Http\Controllers\AdminController;
+use Modules\DayCountCalculator\Http\Controllers\SitemapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,9 @@ use Modules\DayCountCalculator\Http\Controllers\AdminController;
 | Here is where you can register web routes for your module.
 |
 */
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 Route::prefix('calculator')->name('calculator.')->group(function () {
     // Main calculator
@@ -46,8 +50,8 @@ Route::prefix('subscribe')->name('subscribe.')->group(function () {
     Route::post('/resubscribe', [SubscriberController::class, 'resubscribe'])->name('resubscribe');
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Admin panel routes (add auth/admin middleware in production)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Admin panel routes (protected by auth and admin middleware)
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/calculations', [AdminController::class, 'calculations'])->name('calculations');
     Route::get('/subscribers', [AdminController::class, 'subscribers'])->name('subscribers');

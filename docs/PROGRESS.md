@@ -115,8 +115,11 @@ Remaining build-able workstreams, in the order proposed:
 
 **Only the user can do:**
 1. Rotate the old exposed password anywhere it was reused; decide on git-history scrub.
-2. Buy domain, deploy (VPS + `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true`), submit
-   sitemap to Search Console.
+2. **Buy domain: `30360calculator.com` (DECIDED 2026-07-24**, was unregistered; buy at
+   Namecheap; optional: also 30360calc.com as 301 redirect). Then VPS (DigitalOcean
+   $6 droplet) and deploy (`APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true`,
+   `APP_URL=https://30360calculator.com`), submit sitemap to Search Console.
+   Note: `MAIL_FROM_ADDRESS` already matches this domain.
 3. AdSense account → put client ID in `.env`.
 4. Payment account (Paddle/Lemon Squeezy) when Pro tier gets built.
 5. Decide: commit current work? (Suggested: yes, as a clean series on `main`.)

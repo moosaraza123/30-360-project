@@ -3,9 +3,12 @@
 namespace Modules\DayCountCalculator\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Modules\DayCountCalculator\DTOs\CalculationRequest as CalculationRequestDTO;
+use Modules\DayCountCalculator\DTOs\CalculationResult;
 use Modules\DayCountCalculator\DTOs\ComparisonResult;
+use Modules\DayCountCalculator\Features\DayCount\Calculate30360BondBasisFeature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30360USFeature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30E360Feature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30E360ISDAFeature;
@@ -14,9 +17,7 @@ use Modules\DayCountCalculator\Features\DayCount\CalculateActual364Feature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActual365Feature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActualActualFeature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActualActualISDAFeature;
-use Modules\DayCountCalculator\Features\DayCount\Calculate30360BondBasisFeature;
 use Modules\DayCountCalculator\Http\Requests\CompareConventionsRequest;
-use Carbon\Carbon;
 
 /**
  * ComparisonController
@@ -76,34 +77,28 @@ class ComparisonController extends Controller
             interestRate: $calculationRequest->interestRate
         );
 
-        // Return response based on request type
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'comparison' => [
-                    'start_date' => $comparisonResult->startDate->format('Y-m-d'),
-                    'end_date' => $comparisonResult->endDate->format('Y-m-d'),
-                    'principal' => $comparisonResult->principal,
-                    'interest_rate' => $comparisonResult->interestRate,
-                    'results' => array_map(function ($result) {
-                        return [
-                            'convention_type' => $result->conventionType,
-                            'days' => $result->days,
-                            'day_count_factor' => $result->dayCountFactor,
-                            'day_count_factor_formatted' => $result->getFormattedFactor(),
-                            'interest_amount' => $result->interestAmount,
-                            'interest_amount_formatted' => $result->interestAmount ? '$' . number_format($result->interestAmount, 2) : null,
-                        ];
-                    }, $comparisonResult->results),
-                    'statistics' => $comparisonResult->getStatistics(),
-                    'significant_differences' => $comparisonResult->getSignificantDifferences(),
-                ],
-            ]);
-        }
-
-        return view('daycountcalculator::comparison.results', [
-            'comparison' => $comparisonResult,
-            'conventions' => $this->getAvailableConventions(),
+        // The comparison UI is AJAX-driven; this endpoint always returns JSON.
+        // (The previous non-AJAX branch rendered a view that does not exist.)
+        return response()->json([
+            'success' => true,
+            'comparison' => [
+                'start_date' => $comparisonResult->startDate->format('Y-m-d'),
+                'end_date' => $comparisonResult->endDate->format('Y-m-d'),
+                'principal' => $comparisonResult->principal,
+                'interest_rate' => $comparisonResult->interestRate,
+                'results' => array_map(function ($result) {
+                    return [
+                        'convention_type' => $result->conventionType,
+                        'days' => $result->days,
+                        'day_count_factor' => $result->dayCountFactor,
+                        'day_count_factor_formatted' => $result->getFormattedFactor(),
+                        'interest_amount' => $result->interestAmount,
+                        'interest_amount_formatted' => $result->interestAmount ? '$'.number_format($result->interestAmount, 2) : null,
+                    ];
+                }, $comparisonResult->results),
+                'statistics' => $comparisonResult->getStatistics(),
+                'significant_differences' => $comparisonResult->getSignificantDifferences(),
+            ],
         ]);
     }
 
@@ -121,7 +116,7 @@ class ComparisonController extends Controller
         // Recreate comparison from JSON data
         $results = [];
         foreach ($comparisonData['results'] as $conventionType => $resultData) {
-            $results[$conventionType] = new \Modules\DayCountCalculator\DTOs\CalculationResult(
+            $results[$conventionType] = new CalculationResult(
                 days: $resultData['days'],
                 dayCountFactor: $resultData['day_count_factor'],
                 interestAmount: $resultData['interest_amount'],
@@ -210,7 +205,7 @@ class ComparisonController extends Controller
             $stats = $comparison->getStatistics();
             fputcsv($file, ['Min Days', $stats['min_days']]);
             fputcsv($file, ['Max Days', $stats['max_days']]);
-            fputcsv($file, ['Days Range', $stats['days_range']]);
+            fputcsv($file, ['Days Range', $stats['max_days'] - $stats['min_days']]);
             fputcsv($file, ['Min Factor', number_format($stats['min_factor'], 10)]);
             fputcsv($file, ['Max Factor', number_format($stats['max_factor'], 10)]);
 
@@ -236,34 +231,24 @@ class ComparisonController extends Controller
     private function getCalculatorFeature(string $conventionType): object
     {
         return match ($conventionType) {
-            '30/360 US' => new Calculate30360USFeature(),
-            '30/360 Bond Basis' => new Calculate30360BondBasisFeature(),
-            '30E/360' => new Calculate30E360Feature(),
-            '30E/360 ISDA' => new Calculate30E360ISDAFeature(),
-            'Actual/365 Fixed' => new CalculateActual365Feature(),
-            'Actual/360' => new CalculateActual360Feature(),
-            'Actual/364' => new CalculateActual364Feature(),
-            'Actual/Actual' => new CalculateActualActualFeature(),
-            'Actual/Actual ISDA' => new CalculateActualActualISDAFeature(),
+            '30/360 US' => new Calculate30360USFeature,
+            '30/360 Bond Basis' => new Calculate30360BondBasisFeature,
+            '30E/360' => new Calculate30E360Feature,
+            '30E/360 ISDA' => new Calculate30E360ISDAFeature,
+            'Actual/365 Fixed' => new CalculateActual365Feature,
+            'Actual/360' => new CalculateActual360Feature,
+            'Actual/364' => new CalculateActual364Feature,
+            'Actual/Actual' => new CalculateActualActualFeature,
+            'Actual/Actual ISDA' => new CalculateActualActualISDAFeature,
             default => throw new \InvalidArgumentException("Unknown convention type: {$conventionType}"),
         };
     }
 
     /**
-     * Get list of available conventions
+     * Get list of available conventions (from module config — single source of truth)
      */
     private function getAvailableConventions(): array
     {
-        return [
-            '30/360 US',
-            '30/360 Bond Basis',
-            '30E/360',
-            '30E/360 ISDA',
-            'Actual/365 Fixed',
-            'Actual/360',
-            'Actual/364',
-            'Actual/Actual',
-            'Actual/Actual ISDA',
-        ];
+        return array_column(config('daycountcalculator.conventions', []), 'type');
     }
 }

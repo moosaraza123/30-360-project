@@ -24,7 +24,8 @@ class CalculateActual365Feature
         $steps = [];
 
         // Step 1: Calculate actual days between dates
-        $days = $request->startDate->diffInDays($request->endDate);
+        $days = (int) $request->startDate->copy()->startOfDay()
+            ->diffInDays($request->endDate->copy()->startOfDay());
 
         $steps[] = [
             'title' => 'Calculate Actual Days',
@@ -38,8 +39,8 @@ class CalculateActual365Feature
 
         $steps[] = [
             'title' => 'Calculate Day Count Factor',
-            'description' => "Divide actual days by 365 (fixed)",
-            'formula' => "Factor = {$days} / 365 = " . number_format($dayCountFactor, 10),
+            'description' => 'Divide actual days by 365 (fixed)',
+            'formula' => "Factor = {$days} / 365 = ".number_format($dayCountFactor, 10),
             'applied' => true,
         ];
 
@@ -50,8 +51,8 @@ class CalculateActual365Feature
 
             $steps[] = [
                 'title' => 'Calculate Interest',
-                'description' => "Multiply principal by rate and factor",
-                'formula' => "Interest = {$request->principal} × {$request->interestRate} × " . number_format($dayCountFactor, 10) . " = $" . number_format($interestAmount, 2),
+                'description' => 'Multiply principal by rate and factor',
+                'formula' => "Interest = {$request->principal} × {$request->interestRate} × ".number_format($dayCountFactor, 10).' = $'.number_format($interestAmount, 2),
                 'applied' => true,
             ];
         }
@@ -61,7 +62,7 @@ class CalculateActual365Feature
             dayCountFactor: $dayCountFactor,
             interestAmount: $interestAmount,
             steps: $steps,
-            conventionType: 'Actual/365'
+            conventionType: 'Actual/365 Fixed'
         );
     }
 }

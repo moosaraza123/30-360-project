@@ -2,10 +2,10 @@
 
 namespace Modules\DayCountCalculator\Entities;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * SavedCalculation Entity
@@ -74,7 +74,7 @@ class SavedCalculation extends Model
      */
     public function toggleFavorite(): void
     {
-        $this->update(['is_favorite' => !$this->is_favorite]);
+        $this->update(['is_favorite' => ! $this->is_favorite]);
     }
 
     /**

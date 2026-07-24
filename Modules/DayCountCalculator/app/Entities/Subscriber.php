@@ -2,8 +2,8 @@
 
 namespace Modules\DayCountCalculator\Entities;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
@@ -45,9 +45,10 @@ class Subscriber extends Model
      */
     public function markAsVerified(): void
     {
+        // The token is kept after verification: it also authenticates
+        // the unsubscribe link included in every email.
         $this->update([
             'email_verified_at' => now(),
-            'verification_token' => null,
         ]);
     }
 

@@ -26,7 +26,8 @@ class CalculateActualActualISDAFeature
         $steps = [];
 
         // Step 1: Calculate actual days between dates
-        $totalDays = $request->startDate->diffInDays($request->endDate);
+        $totalDays = (int) $request->startDate->copy()->startOfDay()
+            ->diffInDays($request->endDate->copy()->startOfDay());
 
         $steps[] = [
             'title' => 'Calculate Actual Days',
@@ -35,30 +36,31 @@ class CalculateActualActualISDAFeature
             'applied' => true,
         ];
 
-        // Step 2: Split days into leap year and non-leap year days
+        // Step 2: Split days into leap year and non-leap year days.
+        // Walk whole calendar-year segments instead of individual days so the
+        // cost stays constant regardless of the period length.
         $daysInLeapYear = 0;
         $daysInNonLeapYear = 0;
-        $current = $request->startDate->copy();
+        $current = $request->startDate->copy()->startOfDay();
+        $periodEnd = $request->endDate->copy()->startOfDay();
 
-        while ($current->lessThan($request->endDate)) {
-            $nextDay = $current->copy()->addDay();
-
-            if ($nextDay->greaterThan($request->endDate)) {
-                break;
-            }
+        while ($current->lessThan($periodEnd)) {
+            $nextYearStart = $current->copy()->addYear()->startOfYear()->startOfDay();
+            $segmentEnd = $nextYearStart->greaterThan($periodEnd) ? $periodEnd->copy() : $nextYearStart;
+            $segmentDays = (int) $current->diffInDays($segmentEnd);
 
             if ($current->isLeapYear()) {
-                $daysInLeapYear++;
+                $daysInLeapYear += $segmentDays;
             } else {
-                $daysInNonLeapYear++;
+                $daysInNonLeapYear += $segmentDays;
             }
 
-            $current = $nextDay;
+            $current = $segmentEnd;
         }
 
         $steps[] = [
             'title' => 'Separate Leap and Non-Leap Year Days',
-            'description' => "Split the period into days falling in leap years vs non-leap years",
+            'description' => 'Split the period into days falling in leap years vs non-leap years',
             'formula' => "Leap year days: {$daysInLeapYear}\nNon-leap year days: {$daysInNonLeapYear}",
             'applied' => true,
         ];
@@ -70,8 +72,8 @@ class CalculateActualActualISDAFeature
 
         $steps[] = [
             'title' => 'Calculate Day Count Factor',
-            'description' => "Apply ISDA formula: (Leap Days/366) + (Non-Leap Days/365)",
-            'formula' => "Factor = ({$daysInLeapYear}/366) + ({$daysInNonLeapYear}/365) = " . number_format($leapFactor, 10) . " + " . number_format($nonLeapFactor, 10) . " = " . number_format($dayCountFactor, 10),
+            'description' => 'Apply ISDA formula: (Leap Days/366) + (Non-Leap Days/365)',
+            'formula' => "Factor = ({$daysInLeapYear}/366) + ({$daysInNonLeapYear}/365) = ".number_format($leapFactor, 10).' + '.number_format($nonLeapFactor, 10).' = '.number_format($dayCountFactor, 10),
             'applied' => true,
         ];
 
@@ -82,8 +84,8 @@ class CalculateActualActualISDAFeature
 
             $steps[] = [
                 'title' => 'Calculate Interest',
-                'description' => "Multiply principal by rate and factor",
-                'formula' => "Interest = {$request->principal} × {$request->interestRate} × " . number_format($dayCountFactor, 10) . " = $" . number_format($interestAmount, 2),
+                'description' => 'Multiply principal by rate and factor',
+                'formula' => "Interest = {$request->principal} × {$request->interestRate} × ".number_format($dayCountFactor, 10).' = $'.number_format($interestAmount, 2),
                 'applied' => true,
             ];
         }

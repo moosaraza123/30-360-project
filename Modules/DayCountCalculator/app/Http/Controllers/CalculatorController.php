@@ -3,9 +3,11 @@
 namespace Modules\DayCountCalculator\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Modules\DayCountCalculator\DTOs\CalculationRequest as CalculationRequestDTO;
+use Modules\DayCountCalculator\Features\DayCount\Calculate30360BondBasisFeature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30360USFeature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30E360Feature;
 use Modules\DayCountCalculator\Features\DayCount\Calculate30E360ISDAFeature;
@@ -14,10 +16,8 @@ use Modules\DayCountCalculator\Features\DayCount\CalculateActual364Feature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActual365Feature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActualActualFeature;
 use Modules\DayCountCalculator\Features\DayCount\CalculateActualActualISDAFeature;
-use Modules\DayCountCalculator\Features\DayCount\Calculate30360BondBasisFeature;
 use Modules\DayCountCalculator\Http\Requests\CalculateDayCountRequest;
 use Modules\DayCountCalculator\Repositories\CalculationRepository;
-use Carbon\Carbon;
 
 /**
  * CalculatorController
@@ -57,6 +57,7 @@ class CalculatorController extends Controller
             'principal' => $request->input('principal'),
             'interest_rate' => $request->input('interest_rate') ? $request->input('interest_rate') / 100 : null,
             'apply_eom_adjustment' => $request->boolean('apply_eom_adjustment', false),
+            'end_date_is_maturity' => $request->boolean('end_date_is_maturity', false),
         ]);
 
         // Execute appropriate calculator feature
@@ -83,7 +84,7 @@ class CalculatorController extends Controller
                     'day_count_factor' => $result->dayCountFactor,
                     'day_count_factor_formatted' => $result->getFormattedFactor(),
                     'interest_amount' => $result->interestAmount,
-                    'interest_amount_formatted' => $result->interestAmount ? '$' . number_format($result->interestAmount, 2) : null,
+                    'interest_amount_formatted' => $result->interestAmount ? '$'.number_format($result->interestAmount, 2) : null,
                     'steps' => $result->steps,
                     'applied_steps' => $result->getAppliedSteps(),
                 ],
@@ -120,7 +121,7 @@ class CalculatorController extends Controller
     {
         $conventionInfo = $this->getConventionInfo($conventionType);
 
-        if (!$conventionInfo) {
+        if (! $conventionInfo) {
             abort(404, 'Convention not found');
         }
 
@@ -134,7 +135,7 @@ class CalculatorController extends Controller
      */
     public function save(Request $request, int $calculationId)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return response()->json([
                 'success' => false,
                 'message' => 'You must be logged in to save calculations.',
@@ -149,7 +150,20 @@ class CalculatorController extends Controller
 
         $calculation = $this->calculationRepository->findById($calculationId);
 
-        if (!$calculation) {
+        if (! $calculation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Calculation not found.',
+            ], 404);
+        }
+
+        // Only the owner may save: either the authenticated creator, or the
+        // guest session that produced the calculation before logging in.
+        $sessionId = Session::get('calculator_session_id');
+        $ownsCalculation = ($calculation->user_id !== null && $calculation->user_id === auth()->id())
+            || ($calculation->user_id === null && $sessionId !== null && $calculation->session_id === $sessionId);
+
+        if (! $ownsCalculation) {
             return response()->json([
                 'success' => false,
                 'message' => 'Calculation not found.',
@@ -175,7 +189,7 @@ class CalculatorController extends Controller
      */
     public function savedCalculations()
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login')
                 ->with('message', 'Please log in to view saved calculations.');
         }
@@ -196,7 +210,7 @@ class CalculatorController extends Controller
      */
     private function getOrCreateSessionId(): string
     {
-        if (!Session::has('calculator_session_id')) {
+        if (! Session::has('calculator_session_id')) {
             Session::put('calculator_session_id', bin2hex(random_bytes(20)));
         }
 
@@ -209,118 +223,34 @@ class CalculatorController extends Controller
     private function getCalculatorFeature(string $conventionType): object
     {
         return match ($conventionType) {
-            '30/360 US' => new Calculate30360USFeature(),
-            '30/360 Bond Basis' => new Calculate30360BondBasisFeature(),
-            '30E/360' => new Calculate30E360Feature(),
-            '30E/360 ISDA' => new Calculate30E360ISDAFeature(),
-            'Actual/365 Fixed' => new CalculateActual365Feature(),
-            'Actual/360' => new CalculateActual360Feature(),
-            'Actual/364' => new CalculateActual364Feature(),
-            'Actual/Actual' => new CalculateActualActualFeature(),
-            'Actual/Actual ISDA' => new CalculateActualActualISDAFeature(),
+            '30/360 US' => new Calculate30360USFeature,
+            '30/360 Bond Basis' => new Calculate30360BondBasisFeature,
+            '30E/360' => new Calculate30E360Feature,
+            '30E/360 ISDA' => new Calculate30E360ISDAFeature,
+            'Actual/365 Fixed' => new CalculateActual365Feature,
+            'Actual/360' => new CalculateActual360Feature,
+            'Actual/364' => new CalculateActual364Feature,
+            'Actual/Actual' => new CalculateActualActualFeature,
+            'Actual/Actual ISDA' => new CalculateActualActualISDAFeature,
             default => throw new \InvalidArgumentException("Unknown convention type: {$conventionType}"),
         };
     }
 
     /**
-     * Get information about all conventions
+     * Get information about all conventions (from module config — single source of truth)
      */
     private function getConventionsInfo(): array
     {
-        return [
-            [
-                'type' => '30/360 US',
-                'name' => '30/360 US',
-                'alias' => 'Bond Basis',
-                'description' => 'Standard convention for US corporate bonds',
-                'icon' => 'building',
-                'use_cases' => ['US corporate bonds', 'Municipal bonds', 'Agency bonds'],
-                'formula' => 'Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)',
-            ],
-            [
-                'type' => '30/360 Bond Basis',
-                'name' => '30/360 Bond Basis',
-                'alias' => 'Same as 30/360 US',
-                'description' => 'Alias for 30/360 US convention',
-                'icon' => 'building',
-                'use_cases' => ['US corporate bonds', 'Municipal bonds'],
-                'formula' => 'Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)',
-            ],
-            [
-                'type' => '30E/360',
-                'name' => '30E/360',
-                'alias' => 'Eurobond Basis',
-                'description' => 'European convention for international bonds',
-                'icon' => 'globe',
-                'use_cases' => ['Eurobonds', 'International bonds'],
-                'formula' => 'Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)',
-            ],
-            [
-                'type' => '30E/360 ISDA',
-                'name' => '30E/360 ISDA',
-                'alias' => 'German',
-                'description' => 'ISDA variant with different end-of-month handling',
-                'icon' => 'file-text',
-                'use_cases' => ['Interest rate swaps', 'German bonds'],
-                'formula' => 'Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)',
-            ],
-            [
-                'type' => 'Actual/365 Fixed',
-                'name' => 'Actual/365 Fixed',
-                'alias' => 'Act/365',
-                'description' => 'Actual days divided by 365',
-                'icon' => 'calendar',
-                'use_cases' => ['UK Gilts', 'Japanese bonds', 'Euro-Sterling bonds'],
-                'formula' => 'Factor = Actual Days / 365',
-            ],
-            [
-                'type' => 'Actual/360',
-                'name' => 'Actual/360',
-                'alias' => 'Money Market Basis',
-                'description' => 'Actual days divided by 360',
-                'icon' => 'dollar-sign',
-                'use_cases' => ['Money market instruments', 'Short-term loans', 'Commercial paper'],
-                'formula' => 'Factor = Actual Days / 360',
-            ],
-            [
-                'type' => 'Actual/364',
-                'name' => 'Actual/364',
-                'alias' => 'Act/364',
-                'description' => 'Actual days divided by 364',
-                'icon' => 'calendar-check',
-                'use_cases' => ['Some floating rate notes'],
-                'formula' => 'Factor = Actual Days / 364',
-            ],
-            [
-                'type' => 'Actual/Actual',
-                'name' => 'Actual/Actual',
-                'alias' => 'ICMA',
-                'description' => 'Actual days with leap year handling',
-                'icon' => 'clock',
-                'use_cases' => ['US Treasury bonds', 'UK Gilts'],
-                'formula' => 'Factor = Actual Days / Days in Year',
-            ],
-            [
-                'type' => 'Actual/Actual ISDA',
-                'name' => 'Actual/Actual ISDA',
-                'alias' => 'Act/Act ISDA',
-                'description' => 'ISDA variant with separate leap/non-leap year calculation',
-                'icon' => 'file-text',
-                'use_cases' => ['Interest rate swaps', 'Many derivatives'],
-                'formula' => 'Factor = (Leap Days/366) + (Non-Leap Days/365)',
-            ],
-        ];
+        return config('daycountcalculator.conventions', []);
     }
 
     /**
-     * Get information about a specific convention
+     * Get information about a specific convention by canonical type or URL slug
      */
-    private function getConventionInfo(string $conventionType): ?array
+    private function getConventionInfo(string $typeOrSlug): ?array
     {
-        $conventions = $this->getConventionsInfo();
-
-        foreach ($conventions as $convention) {
-            if ($convention['type'] === $conventionType) {
+        foreach ($this->getConventionsInfo() as $convention) {
+            if ($convention['type'] === $typeOrSlug || $convention['slug'] === $typeOrSlug) {
                 return $convention;
             }
         }

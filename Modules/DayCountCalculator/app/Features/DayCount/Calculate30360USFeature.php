@@ -4,16 +4,18 @@ namespace Modules\DayCountCalculator\Features\DayCount;
 
 use Modules\DayCountCalculator\DTOs\CalculationRequest;
 use Modules\DayCountCalculator\DTOs\CalculationResult;
-use Carbon\Carbon;
 
 /**
  * Calculate 30/360 US (Bond Basis) Feature
  *
  * Also known as: Bond Basis, 30/360, 30U/360
  *
- * Rules (per Wikipedia):
+ * Rules (30/360 US / NASD):
+ * - EOM variant (when end-of-month adjustment is enabled):
+ *   - If D1 and D2 are both the last day of February, then change D2 to 30
+ *   - If D1 is the last day of February, then change D1 to 30
  * - If D1 is 31, then change D1 to 30
- * - If D2 is 31 and D1 is 30 or 31, then change D2 to 30
+ * - If D2 is 31 and D1 (after adjustment) is 30 or 31, then change D2 to 30
  *
  * Formula: Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)
  */
@@ -36,12 +38,39 @@ class Calculate30360USFeature
         $originalD1 = $d1;
         $originalD2 = $d2;
 
+        // EOM variant: end-of-February rules (must run before the day-31 rules,
+        // and the D2 rule is evaluated against the unadjusted dates)
+        if ($request->applyEomAdjustment) {
+            $isD1LastDayOfFeb = ($m1 === 2 && $request->startDate->isLastOfMonth());
+            $isD2LastDayOfFeb = ($m2 === 2 && $request->endDate->isLastOfMonth());
+
+            if ($isD1LastDayOfFeb && $isD2LastDayOfFeb) {
+                $d2 = 30;
+                $steps[] = [
+                    'title' => 'EOM Adjustment: Both Dates End February',
+                    'description' => 'Both dates fall on the last day of February, end day changed to 30',
+                    'formula' => "D2: {$originalD2} → 30",
+                    'applied' => true,
+                ];
+            }
+
+            if ($isD1LastDayOfFeb) {
+                $d1 = 30;
+                $steps[] = [
+                    'title' => 'EOM Adjustment: D1 is Last Day of February',
+                    'description' => "{$request->startDate->format('Y-m-d')} is the last day of February, changed to 30",
+                    'formula' => "D1: {$originalD1} → 30",
+                    'applied' => true,
+                ];
+            }
+        }
+
         // Step 1: Check if D1 is 31
         if ($d1 === 31) {
             $d1 = 30;
             $steps[] = [
                 'title' => 'Adjustment: D1 = 31',
-                'description' => "Start day is 31, changed to 30",
+                'description' => 'Start day is 31, changed to 30',
                 'formula' => "D1: {$originalD1} → 30",
                 'applied' => true,
             ];
@@ -54,19 +83,19 @@ class Calculate30360USFeature
             ];
         }
 
-        // Step 2: Check if D2 is 31 and D1 is 30 or 31
-        if ($d2 === 31 && in_array($originalD1, [30, 31])) {
+        // Step 2: Check if D2 is 31 and D1 (after adjustment) is 30 or 31
+        if ($d2 === 31 && in_array($d1, [30, 31])) {
             $d2 = 30;
             $steps[] = [
                 'title' => 'Adjustment: D2 = 31 and D1 ∈ {30, 31}',
-                'description' => "End day is 31 and start day is {$originalD1}, changed end day to 30",
+                'description' => "End day is 31 and adjusted start day is {$d1}, changed end day to 30",
                 'formula' => "D2: {$originalD2} → 30",
                 'applied' => true,
             ];
         } else {
             $steps[] = [
                 'title' => 'Check: D2 = 31 and D1 ∈ {30, 31}',
-                'description' => "Condition not met (D2={$d2}, D1={$originalD1}), no adjustment",
+                'description' => "Condition not met (D2={$d2}, D1={$d1}), no adjustment",
                 'formula' => "D2: {$d2}",
                 'applied' => false,
             ];
@@ -77,7 +106,7 @@ class Calculate30360USFeature
 
         $steps[] = [
             'title' => 'Calculate Days',
-            'description' => "Apply the 30/360 formula",
+            'description' => 'Apply the 30/360 formula',
             'formula' => "Days = 360×({$y2}-{$y1}) + 30×({$m2}-{$m1}) + ({$d2}-{$d1}) = {$days}",
             'applied' => true,
         ];
@@ -87,8 +116,8 @@ class Calculate30360USFeature
 
         $steps[] = [
             'title' => 'Calculate Day Count Factor',
-            'description' => "Divide days by 360",
-            'formula' => "Factor = {$days} / 360 = " . number_format($dayCountFactor, 10),
+            'description' => 'Divide days by 360',
+            'formula' => "Factor = {$days} / 360 = ".number_format($dayCountFactor, 10),
             'applied' => true,
         ];
 
@@ -99,8 +128,8 @@ class Calculate30360USFeature
 
             $steps[] = [
                 'title' => 'Calculate Interest',
-                'description' => "Multiply principal by rate and factor",
-                'formula' => "Interest = {$request->principal} × {$request->interestRate} × {$dayCountFactor} = " . number_format($interestAmount, 2),
+                'description' => 'Multiply principal by rate and factor',
+                'formula' => "Interest = {$request->principal} × {$request->interestRate} × {$dayCountFactor} = ".number_format($interestAmount, 2),
                 'applied' => true,
             ];
         }

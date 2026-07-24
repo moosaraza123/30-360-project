@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Modules\DayCountCalculator\Http\Controllers\DayCountCalculatorController;
-
-Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
-    Route::apiResource('daycountcalculators', DayCountCalculatorController::class)->names('daycountcalculator');
-});
+// No API routes yet. A versioned, token-authenticated calculation API is on
+// the roadmap (see monetization plan); the previous auto-generated scaffold
+// exposed non-functional stub endpoints and was removed.

@@ -113,7 +113,7 @@ class AdminController extends Controller
      */
     public function export(string $type)
     {
-        if (!in_array($type, ['calculations', 'subscribers'])) {
+        if (! in_array($type, ['calculations', 'subscribers'])) {
             abort(400, 'Invalid export type');
         }
 
@@ -129,7 +129,7 @@ class AdminController extends Controller
      */
     private function exportCalculations()
     {
-        $filename = 'calculations_export_' . now()->format('Y-m-d') . '.csv';
+        $filename = 'calculations_export_'.now()->format('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
@@ -170,7 +170,7 @@ class AdminController extends Controller
      */
     private function exportSubscribers()
     {
-        $filename = 'subscribers_export_' . now()->format('Y-m-d') . '.csv';
+        $filename = 'subscribers_export_'.now()->format('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',

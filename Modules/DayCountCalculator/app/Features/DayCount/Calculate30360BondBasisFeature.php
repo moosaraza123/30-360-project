@@ -19,7 +19,7 @@ class Calculate30360BondBasisFeature
 
     public function __construct()
     {
-        $this->calculator = new Calculate30360USFeature();
+        $this->calculator = new Calculate30360USFeature;
     }
 
     /**

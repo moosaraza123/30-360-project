@@ -4,6 +4,56 @@
 
 @section('meta_description', 'Learn about ' . $convention['name'] . ' day count convention. ' . $convention['description'])
 
+@section('canonical', route('calculator.educate', $convention['slug']))
+
+@section('structured_data')
+@php
+    $structuredData = [
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => [
+                [
+                    '@type' => 'Question',
+                    'name' => "What is the {$convention['name']} day count convention?",
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $convention['description'] . ($convention['alias'] ? " Also known as: {$convention['alias']}." : ''),
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => "What is the formula for {$convention['name']}?",
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $convention['formula'],
+                    ],
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => "When is {$convention['name']} used?",
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Common uses include: ' . implode(', ', $convention['use_cases']) . '.',
+                    ],
+                ],
+            ],
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Calculator', 'item' => route('calculator.index')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $convention['name'], 'item' => route('calculator.educate', $convention['slug'])],
+            ],
+        ],
+    ];
+@endphp
+@foreach($structuredData as $schema)
+<script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endforeach
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row">
@@ -176,23 +226,14 @@
                     <p class="text-muted">You might also be interested in these conventions:</p>
                     <div class="list-group">
                         @php
-                            $relatedConventions = [
-                                '30/360 US' => ['30/360 Bond Basis', '30E/360', '30E/360 ISDA'],
-                                '30/360 Bond Basis' => ['30/360 US', '30E/360'],
-                                '30E/360' => ['30/360 US', '30E/360 ISDA'],
-                                '30E/360 ISDA' => ['30E/360', 'Actual/Actual ISDA'],
-                                'Actual/365 Fixed' => ['Actual/360', 'Actual/Actual'],
-                                'Actual/360' => ['Actual/365 Fixed', 'Actual/364'],
-                                'Actual/364' => ['Actual/360', 'Actual/365 Fixed'],
-                                'Actual/Actual' => ['Actual/Actual ISDA', 'Actual/365 Fixed'],
-                                'Actual/Actual ISDA' => ['Actual/Actual', '30E/360 ISDA'],
-                            ];
-                            $related = $relatedConventions[$convention['type']] ?? [];
+                            $related = collect(config('daycountcalculator.conventions'))
+                                ->whereIn('type', $convention['related'] ?? [])
+                                ->values();
                         @endphp
 
-                        @foreach($related as $relatedType)
-                            <a href="{{ route('calculator.educate', $relatedType) }}" class="list-group-item list-group-item-action">
-                                {{ $relatedType }}
+                        @foreach($related as $relatedConvention)
+                            <a href="{{ route('calculator.educate', $relatedConvention['slug']) }}" class="list-group-item list-group-item-action">
+                                {{ $relatedConvention['name'] }}
                                 <i class="bi bi-arrow-right float-end"></i>
                             </a>
                         @endforeach

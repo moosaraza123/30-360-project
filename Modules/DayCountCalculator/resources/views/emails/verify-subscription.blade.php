@@ -27,7 +27,10 @@
         .logo {
             font-size: 24px;
             font-weight: bold;
-            color: #3b82f6;
+            color: #0f172a;
+        }
+        .logo .gold {
+            color: #c9a227;
         }
         h1 {
             color: #1e293b;
@@ -37,15 +40,14 @@
         .button {
             display: inline-block;
             padding: 14px 32px;
-            background-color: #3b82f6;
-            color: #ffffff;
+            background-color: #c9a227;
+            color: #0f172a;
             text-decoration: none;
             border-radius: 6px;
-            font-weight: 600;
-            margin: 20px 0;
+            font-weight: 700;
         }
         .button:hover {
-            background-color: #2563eb;
+            background-color: #b8921f;
         }
         .footer {
             margin-top: 40px;
@@ -68,7 +70,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Day Count Calculator</div>
+            <div class="logo"><span class="gold">30</span>/360 Calculator</div>
         </div>
 
         <h1>Verify Your Email Address</h1>
@@ -99,6 +101,9 @@
         <div class="footer">
             <p>
                 If you didn't subscribe to our mailing list, you can safely ignore this email.
+            </p>
+            <p>
+                <a href="{{ route('subscribe.unsubscribe', ['email' => $subscriber->email, 'token' => $subscriber->verification_token]) }}" style="color: #94a3b8;">Unsubscribe</a>
             </p>
             <p>
                 <strong>Day Count Calculator</strong><br>

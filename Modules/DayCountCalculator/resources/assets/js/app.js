@@ -2,6 +2,9 @@
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
+// Bootstrap Icons font (every view uses <i class="bi bi-...">)
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 // Import Flatpickr for date picking
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';

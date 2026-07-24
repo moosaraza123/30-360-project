@@ -2,9 +2,9 @@
 
 namespace Modules\DayCountCalculator\Repositories;
 
-use Modules\DayCountCalculator\Entities\Subscriber;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\DayCountCalculator\Entities\Subscriber;
 
 /**
  * SubscriberRepository
@@ -106,9 +106,9 @@ class SubscriberRepository
     public function getGrowthTimeline(int $days = 30): array
     {
         return Subscriber::select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('count(*) as count')
-            )
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('count(*) as count')
+        )
             ->where('created_at', '>=', now()->subDays($days))
             ->groupBy('date')
             ->orderBy('date')

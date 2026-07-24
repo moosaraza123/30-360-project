@@ -17,7 +17,8 @@ readonly class CalculationRequest
         public Carbon $endDate,
         public ?float $principal = null,
         public ?float $interestRate = null,
-        public bool $applyEomAdjustment = false
+        public bool $applyEomAdjustment = false,
+        public bool $endDateIsMaturity = false
     ) {}
 
     /**
@@ -27,11 +28,12 @@ readonly class CalculationRequest
     {
         return new self(
             conventionType: $data['convention_type'],
-            startDate: Carbon::parse($data['start_date']),
-            endDate: Carbon::parse($data['end_date']),
+            startDate: Carbon::parse($data['start_date'])->startOfDay(),
+            endDate: Carbon::parse($data['end_date'])->startOfDay(),
             principal: isset($data['principal']) ? (float) $data['principal'] : null,
             interestRate: isset($data['interest_rate']) ? (float) $data['interest_rate'] : null,
-            applyEomAdjustment: $data['apply_eom_adjustment'] ?? false
+            applyEomAdjustment: $data['apply_eom_adjustment'] ?? false,
+            endDateIsMaturity: $data['end_date_is_maturity'] ?? false
         );
     }
 
@@ -47,6 +49,7 @@ readonly class CalculationRequest
             'principal' => $this->principal,
             'interest_rate' => $this->interestRate,
             'apply_eom_adjustment' => $this->applyEomAdjustment,
+            'end_date_is_maturity' => $this->endDateIsMaturity,
         ];
     }
 

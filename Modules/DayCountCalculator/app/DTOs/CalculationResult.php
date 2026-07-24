@@ -59,7 +59,7 @@ readonly class CalculationResult
     public function getFormattedInterest(): ?string
     {
         return $this->interestAmount !== null
-            ? '$' . number_format($this->interestAmount, 2)
+            ? '$'.number_format($this->interestAmount, 2)
             : null;
     }
 
@@ -76,7 +76,7 @@ readonly class CalculationResult
      */
     public function getAppliedSteps(): array
     {
-        return array_filter($this->steps, fn($step) => $step['applied'] ?? false);
+        return array_filter($this->steps, fn ($step) => $step['applied'] ?? false);
     }
 
     /**

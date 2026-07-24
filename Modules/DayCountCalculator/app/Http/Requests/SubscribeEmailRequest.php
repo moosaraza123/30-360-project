@@ -3,8 +3,6 @@
 namespace Modules\DayCountCalculator\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Modules\DayCountCalculator\Entities\Subscriber;
 
 /**
  * SubscribeEmailRequest
@@ -31,13 +29,12 @@ class SubscribeEmailRequest extends FormRequest
                 'required',
                 'email:rfc,dns',
                 'max:255',
-                Rule::unique('subscribers', 'email'),
             ],
             'source' => [
                 'nullable',
                 'string',
-                'in:calculator,comparison,footer,popup,exit_intent'
-            ]
+                'in:calculator,comparison,footer,popup,exit_intent',
+            ],
         ];
     }
 

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Modules\DayCountCalculator\Http\Requests\SubscribeEmailRequest;
-use Modules\DayCountCalculator\Repositories\SubscriberRepository;
 use Modules\DayCountCalculator\Mail\VerifySubscriptionMail;
+use Modules\DayCountCalculator\Repositories\SubscriberRepository;
 
 /**
  * SubscriberController
@@ -25,22 +25,31 @@ class SubscriberController extends Controller
      */
     public function subscribe(SubscribeEmailRequest $request)
     {
-        // Create subscriber
-        $subscriber = $this->subscriberRepository->create(
-            email: $request->input('email'),
-            source: $request->input('source', 'calculator')
-        );
+        // The response is identical whether or not the email was already
+        // subscribed, so the endpoint cannot be used to enumerate subscribers.
+        $existing = $this->subscriberRepository->findByEmail($request->input('email'));
 
-        // Send verification email
-        try {
-            Mail::to($subscriber->email)->send(new VerifySubscriptionMail($subscriber));
-        } catch (\Exception $e) {
-            // Log error but don't fail the request
-            logger()->error('Failed to send verification email', [
-                'subscriber_id' => $subscriber->id,
-                'email' => $subscriber->email,
-                'error' => $e->getMessage(),
-            ]);
+        if ($existing) {
+            $subscriber = $existing->isVerified() ? null : $existing;
+        } else {
+            $subscriber = $this->subscriberRepository->create(
+                email: $request->input('email'),
+                source: $request->input('source', 'calculator')
+            );
+        }
+
+        // Send (or re-send) the verification email for unverified subscribers
+        if ($subscriber) {
+            try {
+                Mail::to($subscriber->email)->send(new VerifySubscriptionMail($subscriber));
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                logger()->error('Failed to send verification email', [
+                    'subscriber_id' => $subscriber->id,
+                    'email' => $subscriber->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // Return response based on request type
@@ -63,7 +72,7 @@ class SubscriberController extends Controller
     {
         $subscriber = $this->subscriberRepository->findByToken($token);
 
-        if (!$subscriber) {
+        if (! $subscriber) {
             return view('daycountcalculator::subscription.verify-failed', [
                 'message' => 'Invalid verification token. The link may have expired or been used already.',
             ]);
@@ -90,7 +99,8 @@ class SubscriberController extends Controller
     {
         $subscriber = $this->subscriberRepository->findByEmail($email);
 
-        if (!$subscriber || $subscriber->verification_token !== $token) {
+        if (! $subscriber || ! is_string($subscriber->verification_token)
+            || ! hash_equals($subscriber->verification_token, $token)) {
             return view('daycountcalculator::subscription.unsubscribe-failed', [
                 'message' => 'Invalid unsubscribe link.',
             ]);
@@ -114,7 +124,7 @@ class SubscriberController extends Controller
 
         $subscriber = $this->subscriberRepository->findByEmail($request->input('email'));
 
-        if (!$subscriber) {
+        if (! $subscriber) {
             return redirect()
                 ->back()
                 ->withErrors(['email' => 'Email not found.']);

@@ -2,11 +2,11 @@
 
 namespace Modules\DayCountCalculator\Entities;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\User;
 
 /**
  * Calculation Entity
@@ -96,7 +96,7 @@ class Calculation extends Model
      */
     public function getDateRangeAttribute(): string
     {
-        return $this->start_date->format('M d, Y') . ' - ' . $this->end_date->format('M d, Y');
+        return $this->start_date->format('M d, Y').' - '.$this->end_date->format('M d, Y');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Modules\DayCountCalculator\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * CalculateDayCountRequest
@@ -28,35 +29,39 @@ class CalculateDayCountRequest extends FormRequest
             'convention_type' => [
                 'required',
                 'string',
-                'in:30/360 US,30/360 Bond Basis,30E/360,30E/360 ISDA,Actual/365 Fixed,Actual/360,Actual/364,Actual/Actual,Actual/Actual ISDA'
+                Rule::in(array_column(config('daycountcalculator.conventions', []), 'type')),
             ],
             'start_date' => [
                 'required',
                 'date',
-                'before_or_equal:end_date'
+                'before_or_equal:end_date',
             ],
             'end_date' => [
                 'required',
                 'date',
-                'after_or_equal:start_date'
+                'after_or_equal:start_date',
             ],
             'principal' => [
                 'nullable',
                 'numeric',
                 'min:0',
-                'max:999999999999.99'
+                'max:999999999999.99',
             ],
             'interest_rate' => [
                 'nullable',
                 'numeric',
                 'min:0',
                 'max:100',
-                'required_with:principal'
+                'required_with:principal',
             ],
             'apply_eom_adjustment' => [
                 'nullable',
-                'boolean'
-            ]
+                'boolean',
+            ],
+            'end_date_is_maturity' => [
+                'nullable',
+                'boolean',
+            ],
         ];
     }
 
@@ -106,6 +111,7 @@ class CalculateDayCountRequest extends FormRequest
     {
         $this->merge([
             'apply_eom_adjustment' => $this->boolean('apply_eom_adjustment', false),
+            'end_date_is_maturity' => $this->boolean('end_date_is_maturity', false),
         ]);
     }
 }

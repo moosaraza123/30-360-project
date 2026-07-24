@@ -109,6 +109,32 @@
                             </div>
                         </div>
 
+                        {{-- Convention Options --}}
+                        <div class="rounded-3 p-3 mb-4" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                            <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">
+                                Convention Options
+                                <span class="fw-normal ms-1" style="color:#94a3b8;font-size:.78rem;text-transform:none;letter-spacing:0;">Optional</span>
+                            </h6>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" value="1"
+                                       id="apply_eom_adjustment" name="apply_eom_adjustment"
+                                       @checked(old('apply_eom_adjustment'))>
+                                <label class="form-check-label" for="apply_eom_adjustment" style="font-size:.875rem;">
+                                    Apply end-of-month (EOM) adjustment
+                                    <span class="d-block" style="color:#94a3b8;font-size:.78rem;">30/360 US only: treats end-of-February dates as the 30th (NASD EOM rule)</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1"
+                                       id="end_date_is_maturity" name="end_date_is_maturity"
+                                       @checked(old('end_date_is_maturity'))>
+                                <label class="form-check-label" for="end_date_is_maturity" style="font-size:.875rem;">
+                                    End date is the maturity / termination date
+                                    <span class="d-block" style="color:#94a3b8;font-size:.78rem;">30E/360 ISDA only: a maturity date falling on the last day of February is not rolled to the 30th</span>
+                                </label>
+                            </div>
+                        </div>
+
                         {{-- Submit --}}
                         <div class="d-grid">
                             <button type="submit" class="btn btn-gold btn-lg" id="calculateBtn">
@@ -227,7 +253,7 @@
                 ul.appendChild(li);
             });
 
-            document.getElementById('learnMoreLink').href = `/calculator/learn/${encodeURIComponent(info.type)}`;
+            document.getElementById('learnMoreLink').href = `/calculator/learn/${info.slug}`;
             card.style.display = 'block';
         });
     });

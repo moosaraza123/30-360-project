@@ -2,11 +2,11 @@
 
 namespace Modules\DayCountCalculator\Repositories;
 
-use Modules\DayCountCalculator\Entities\Calculation;
-use Modules\DayCountCalculator\DTOs\CalculationRequest;
-use Modules\DayCountCalculator\DTOs\CalculationResult;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Modules\DayCountCalculator\DTOs\CalculationRequest;
+use Modules\DayCountCalculator\DTOs\CalculationResult;
+use Modules\DayCountCalculator\Entities\Calculation;
 
 /**
  * CalculationRepository
@@ -171,9 +171,9 @@ class CalculationRepository
     public function getCalculationsTimeline(int $days = 30): array
     {
         return Calculation::select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('count(*) as count')
-            )
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('count(*) as count')
+        )
             ->where('created_at', '>=', now()->subDays($days))
             ->groupBy('date')
             ->orderBy('date')

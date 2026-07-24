@@ -30,7 +30,7 @@ readonly class ComparisonResult
             'principal' => $this->principal,
             'interest_rate' => $this->interestRate,
             'results' => array_map(
-                fn(CalculationResult $result) => $result->toArray(),
+                fn (CalculationResult $result) => $result->toArray(),
                 $this->results
             ),
             'statistics' => $this->getStatistics(),
@@ -46,8 +46,8 @@ readonly class ComparisonResult
             return [];
         }
 
-        $days = array_map(fn($r) => $r->days, $this->results);
-        $factors = array_map(fn($r) => $r->dayCountFactor, $this->results);
+        $days = array_map(fn ($r) => $r->days, $this->results);
+        $factors = array_map(fn ($r) => $r->dayCountFactor, $this->results);
 
         return [
             'min_days' => min($days),
@@ -66,7 +66,7 @@ readonly class ComparisonResult
     public function sortedByDays(bool $ascending = true): array
     {
         $sorted = $this->results;
-        usort($sorted, fn($a, $b) => $a->days <=> $b->days);
+        usort($sorted, fn ($a, $b) => $a->days <=> $b->days);
 
         return $ascending ? $sorted : array_reverse($sorted);
     }

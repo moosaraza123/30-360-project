@@ -10,11 +10,11 @@ use Modules\DayCountCalculator\DTOs\CalculationResult;
  *
  * Also known as: 30E/360 ISDA, Eurobond Basis (ISDA 2006), German
  *
- * Rules (per ISDA):
- * - If D1 is the last day of February, then D1 = 30
- * - If D2 is the last day of February, then D2 = 30
- * - If D1 is 31, then D1 = 30
- * - If D2 is 31, then D2 = 30
+ * Rules (per ISDA 2006 Section 4.16(h)):
+ * - If D1 is the last day of the month (incl. February), then D1 = 30
+ * - If D2 is the last day of the month (incl. February), then D2 = 30,
+ *   UNLESS D2 is the maturity/termination date and falls on the last day
+ *   of February (in that case D2 is left unchanged)
  *
  * Formula: Days = 360×(Y2-Y1) + 30×(M2-M1) + (D2-D1)
  */
@@ -50,12 +50,12 @@ class Calculate30E360ISDAFeature
                 'formula' => "D1: {$originalD1} → 30",
                 'applied' => true,
             ];
-        } else if ($d1 === 31) {
+        } elseif ($d1 === 31) {
             // Step 2: Check if D1 is 31
             $d1 = 30;
             $steps[] = [
                 'title' => 'Adjustment: D1 = 31',
-                'description' => "Start day is 31, changed to 30",
+                'description' => 'Start day is 31, changed to 30',
                 'formula' => "D1: {$originalD1} → 30",
                 'applied' => true,
             ];
@@ -69,7 +69,15 @@ class Calculate30E360ISDAFeature
         }
 
         // Step 3: Check if D2 is last day of February
-        if ($isD2LastDayOfFeb) {
+        // ISDA exception: no adjustment when D2 is the maturity/termination date
+        if ($isD2LastDayOfFeb && $request->endDateIsMaturity) {
+            $steps[] = [
+                'title' => 'Exception: D2 is Maturity Date in February',
+                'description' => "{$request->endDate->format('Y-m-d')} is the last day of February but is the maturity/termination date, so it is NOT changed to 30 (ISDA 2006 exception)",
+                'formula' => "D2: {$d2} (unchanged)",
+                'applied' => true,
+            ];
+        } elseif ($isD2LastDayOfFeb) {
             $d2 = 30;
             $steps[] = [
                 'title' => 'Adjustment: D2 is Last Day of February',
@@ -77,12 +85,12 @@ class Calculate30E360ISDAFeature
                 'formula' => "D2: {$originalD2} → 30",
                 'applied' => true,
             ];
-        } else if ($d2 === 31) {
+        } elseif ($d2 === 31) {
             // Step 4: Check if D2 is 31
             $d2 = 30;
             $steps[] = [
                 'title' => 'Adjustment: D2 = 31',
-                'description' => "End day is 31, changed to 30",
+                'description' => 'End day is 31, changed to 30',
                 'formula' => "D2: {$originalD2} → 30",
                 'applied' => true,
             ];
@@ -100,7 +108,7 @@ class Calculate30E360ISDAFeature
 
         $steps[] = [
             'title' => 'Calculate Days',
-            'description' => "Apply the 30E/360 ISDA formula",
+            'description' => 'Apply the 30E/360 ISDA formula',
             'formula' => "Days = 360×({$y2}-{$y1}) + 30×({$m2}-{$m1}) + ({$d2}-{$d1}) = {$days}",
             'applied' => true,
         ];
@@ -110,8 +118,8 @@ class Calculate30E360ISDAFeature
 
         $steps[] = [
             'title' => 'Calculate Day Count Factor',
-            'description' => "Divide days by 360",
-            'formula' => "Factor = {$days} / 360 = " . number_format($dayCountFactor, 10),
+            'description' => 'Divide days by 360',
+            'formula' => "Factor = {$days} / 360 = ".number_format($dayCountFactor, 10),
             'applied' => true,
         ];
 
@@ -122,8 +130,8 @@ class Calculate30E360ISDAFeature
 
             $steps[] = [
                 'title' => 'Calculate Interest',
-                'description' => "Multiply principal by rate and factor",
-                'formula' => "Interest = {$request->principal} × {$request->interestRate} × " . number_format($dayCountFactor, 10) . " = $" . number_format($interestAmount, 2),
+                'description' => 'Multiply principal by rate and factor',
+                'formula' => "Interest = {$request->principal} × {$request->interestRate} × ".number_format($dayCountFactor, 10).' = $'.number_format($interestAmount, 2),
                 'applied' => true,
             ];
         }

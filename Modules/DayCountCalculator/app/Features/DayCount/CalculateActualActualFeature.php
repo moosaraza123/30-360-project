@@ -6,14 +6,16 @@ use Modules\DayCountCalculator\DTOs\CalculationRequest;
 use Modules\DayCountCalculator\DTOs\CalculationResult;
 
 /**
- * Calculate Actual/Actual ICMA Feature
+ * Calculate Actual/Actual Feature (calendar-year split)
  *
- * Also known as: Act/Act ICMA, Actual/Actual (ISMA)
+ * Splits the period at calendar-year boundaries and divides each segment
+ * by the length of its own year (365 or 366). Note: this is NOT the ICMA
+ * convention — true Act/Act ICMA is defined per coupon period and requires
+ * a payment frequency, which this two-date calculator does not capture.
  *
- * Formula: Factor = (Actual Days) / (Days in Year)
- * Where Days in Year = 366 if leap year, 365 otherwise
+ * Formula: Factor = Σ (days in year i) / (365 or 366)
  *
- * Common use: US Treasury bonds, UK Gilts
+ * Common use: quick Act/Act estimates when no coupon schedule is available
  */
 class CalculateActualActualFeature
 {
@@ -25,7 +27,8 @@ class CalculateActualActualFeature
         $steps = [];
 
         // Step 1: Calculate actual days between dates
-        $days = $request->startDate->diffInDays($request->endDate);
+        $days = (int) $request->startDate->copy()->startOfDay()
+            ->diffInDays($request->endDate->copy()->startOfDay());
 
         $steps[] = [
             'title' => 'Calculate Actual Days',
@@ -45,39 +48,38 @@ class CalculateActualActualFeature
 
             $steps[] = [
                 'title' => 'Determine Days in Year',
-                'description' => "Period is within {$startYear}, which is " . ($isLeapYear ? "a leap year" : "not a leap year"),
+                'description' => "Period is within {$startYear}, which is ".($isLeapYear ? 'a leap year' : 'not a leap year'),
                 'formula' => "Days in Year = {$daysInYear}",
                 'applied' => true,
             ];
 
             $dayCountFactor = $days / $daysInYear;
         } else {
-            // Spans multiple years - weighted calculation
+            // Spans multiple years - weighted calculation.
+            // Each segment runs up to (exclusive) the next Jan 1, so day
+            // counts stay whole numbers.
             $factor = 0;
-            $current = $request->startDate->copy();
+            $current = $request->startDate->copy()->startOfDay();
+            $periodEnd = $request->endDate->copy()->startOfDay();
             $factorSteps = [];
 
-            while ($current->year <= $endYear) {
-                $yearStart = $current->copy();
-                $yearEnd = $current->copy()->endOfYear();
+            while ($current->lessThan($periodEnd)) {
+                $nextYearStart = $current->copy()->addYear()->startOfYear()->startOfDay();
+                $segmentEnd = $nextYearStart->greaterThan($periodEnd) ? $periodEnd->copy() : $nextYearStart;
 
-                if ($yearEnd->greaterThan($request->endDate)) {
-                    $yearEnd = $request->endDate->copy();
-                }
-
-                $daysInThisYear = $yearStart->diffInDays($yearEnd);
-                $totalDaysInYear = $yearStart->isLeapYear() ? 366 : 365;
+                $daysInThisYear = (int) $current->diffInDays($segmentEnd);
+                $totalDaysInYear = $current->isLeapYear() ? 366 : 365;
                 $yearFactor = $daysInThisYear / $totalDaysInYear;
                 $factor += $yearFactor;
 
-                $factorSteps[] = "Year {$current->year}: {$daysInThisYear} days / {$totalDaysInYear} = " . number_format($yearFactor, 10);
+                $factorSteps[] = "Year {$current->year}: {$daysInThisYear} days / {$totalDaysInYear} = ".number_format($yearFactor, 10);
 
-                $current = $current->copy()->addYear()->startOfYear();
+                $current = $segmentEnd;
             }
 
             $steps[] = [
                 'title' => 'Calculate Weighted Factor',
-                'description' => "Period spans multiple years, calculate weighted factor",
+                'description' => 'Period spans multiple years, calculate weighted factor',
                 'formula' => implode("\n", $factorSteps),
                 'applied' => true,
             ];
@@ -88,8 +90,8 @@ class CalculateActualActualFeature
         // Step 3: Calculate day count factor
         $steps[] = [
             'title' => 'Day Count Factor',
-            'description' => "Final day count factor",
-            'formula' => "Factor = " . number_format($dayCountFactor, 10),
+            'description' => 'Final day count factor',
+            'formula' => 'Factor = '.number_format($dayCountFactor, 10),
             'applied' => true,
         ];
 
@@ -100,8 +102,8 @@ class CalculateActualActualFeature
 
             $steps[] = [
                 'title' => 'Calculate Interest',
-                'description' => "Multiply principal by rate and factor",
-                'formula' => "Interest = {$request->principal} × {$request->interestRate} × " . number_format($dayCountFactor, 10) . " = $" . number_format($interestAmount, 2),
+                'description' => 'Multiply principal by rate and factor',
+                'formula' => "Interest = {$request->principal} × {$request->interestRate} × ".number_format($dayCountFactor, 10).' = $'.number_format($interestAmount, 2),
                 'applied' => true,
             ];
         }

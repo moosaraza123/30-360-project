@@ -29,7 +29,7 @@ resuming work.
 > covers everything EN+AR with hreflang. **Suite: 99 tests / 257 assertions green.**
 > Remaining before deploy: buy hisabi.com, Arabic native-speaker copy review,
 > privacy/terms pages, admin panel still on old Bootstrap master layout (fine),
-> zakat gold-price API (roadmap).
+> zakat gold-price API: DONE (metalpriceapi.com, key in .env as GOLD_API_KEY, 12h cache, static fallback).
 
 ## 1. Current state (TL;DR)
 

@@ -9,6 +9,9 @@ return [
     | (roadmap: replace with a metals price API + daily cache).
     */
     'zakat' => [
+        // Live prices via metalpriceapi.com when GOLD_API_KEY is set;
+        // these static values are the fallback when the API is unavailable.
+        'api_key' => env('GOLD_API_KEY'),
         'gold_price_per_gram' => [
             'AED' => 390.0,
             'SAR' => 400.0,

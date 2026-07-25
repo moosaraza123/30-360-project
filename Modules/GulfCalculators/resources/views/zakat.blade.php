@@ -44,7 +44,14 @@
                     <input type="number" step="0.01" min="0.01" id="gold_price_per_gram" name="gold_price_per_gram"
                            x-ref="goldprice" value="{{ old('gold_price_per_gram', $defaults['gold_price_per_gram']['AED']) }}"
                            required class="field-input" dir="ltr">
-                    <p class="field-help">{{ __('Default from') }} {{ $defaults['prices_updated_at'] }} — {{ __('adjust to today’s price for accuracy.') }}</p>
+                    @if(!empty($defaults['live']))
+                        <p class="field-help inline-flex items-center gap-1.5">
+                            <span class="h-1.5 w-1.5 rounded-full bg-brand"></span>
+                            {{ __('Live market price') }} · {{ $defaults['prices_updated_at'] }}
+                        </p>
+                    @else
+                        <p class="field-help">{{ __('Default from') }} {{ $defaults['prices_updated_at'] }} — {{ __('adjust to today’s price for accuracy.') }}</p>
+                    @endif
                 </div>
             </div>
 

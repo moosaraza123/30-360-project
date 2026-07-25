@@ -30,6 +30,7 @@
              database on every run. Never point it at the dev database. -->
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_DATABASE" value="devlocal_testing"/>
+        <env name="GOLD_API_KEY" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

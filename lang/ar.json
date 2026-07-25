@@ -99,5 +99,6 @@
     "ISDA-verified day count conventions for bonds, sukuk and derivatives.": "اتفاقيات حساب الأيام وفق معايير ISDA للسندات والصكوك والمشتقات.",
     "Dashboard": "لوحة التحكم",
     "Saved Calculations": "الحسابات المحفوظة",
-    "Admin Panel": "لوحة الإدارة"
+    "Admin Panel": "لوحة الإدارة",
+    "Live market price": "سعر السوق المباشر"
 }

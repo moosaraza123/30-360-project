@@ -9,6 +9,7 @@ use Modules\GulfCalculators\Features\GratuityKsaFeature;
 use Modules\GulfCalculators\Features\GratuityUaeFeature;
 use Modules\GulfCalculators\Features\VatFeature;
 use Modules\GulfCalculators\Features\ZakatFeature;
+use Modules\GulfCalculators\Services\GoldPriceService;
 
 class GulfCalculatorsController extends Controller
 {
@@ -114,16 +115,41 @@ class GulfCalculatorsController extends Controller
 
     /* ---------------- Zakat ---------------- */
 
-    public function zakat()
+    public function zakat(GoldPriceService $goldPrice)
     {
         return view('gulfcalculators::zakat', [
             'page' => config('gulfcalculators.pages.zakat-calculator'),
-            'defaults' => config('gulfcalculators.zakat'),
+            'defaults' => $this->zakatDefaults($goldPrice),
             'result' => null,
         ]);
     }
 
-    public function zakatCalculate(Request $request)
+    /**
+     * Static config defaults, upgraded to live market prices when the
+     * gold price API is configured and reachable.
+     */
+    private function zakatDefaults(GoldPriceService $goldPrice): array
+    {
+        $defaults = config('gulfcalculators.zakat');
+        $defaults['live'] = false;
+
+        foreach (array_keys($defaults['gold_price_per_gram']) as $currency) {
+            $livePrice = $goldPrice->pricePerGram($currency);
+
+            if ($livePrice !== null) {
+                $defaults['gold_price_per_gram'][$currency] = $livePrice;
+                $defaults['live'] = true;
+            }
+        }
+
+        if ($defaults['live']) {
+            $defaults['prices_updated_at'] = now()->toDateString();
+        }
+
+        return $defaults;
+    }
+
+    public function zakatCalculate(Request $request, GoldPriceService $goldPrice)
     {
         $data = $request->validate([
             'currency' => 'required|in:AED,SAR',
@@ -141,7 +167,7 @@ class GulfCalculatorsController extends Controller
 
         return view('gulfcalculators::zakat', [
             'page' => config('gulfcalculators.pages.zakat-calculator'),
-            'defaults' => config('gulfcalculators.zakat'),
+            'defaults' => $this->zakatDefaults($goldPrice),
             'result' => $result,
         ]);
     }

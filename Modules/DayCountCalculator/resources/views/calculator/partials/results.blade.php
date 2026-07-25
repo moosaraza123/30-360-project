@@ -1,162 +1,146 @@
-<div class="results-panel" id="resultsCard">
+<div class="card overflow-hidden" id="resultsCard">
     {{-- Header --}}
-    <div class="results-header">
-        <div class="results-icon">✦</div>
+    <div class="flex items-center gap-3 border-b border-line bg-brand px-5 py-4 text-white">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-lg text-gold" aria-hidden="true">✦</div>
         <div>
-            <h5>Calculation Results</h5>
-            <small>{{ $result->conventionType }}</small>
+            <h2 class="text-base font-bold">Calculation Results</h2>
+            <div class="text-xs text-white/60">{{ $result->conventionType }}</div>
         </div>
-        <div class="ms-auto">
-            <span class="badge badge-gold px-3 py-2" style="font-size:.8rem;">{{ $result->days }} days</span>
+        <div class="ml-auto">
+            <span class="tabular rounded-full bg-gold/20 px-3 py-1 text-xs font-bold text-gold">{{ $result->days }} days</span>
         </div>
     </div>
 
-    {{-- Metric Boxes --}}
-    <div class="p-4">
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="metric-box">
-                    <div class="metric-value font-monospace">{{ $result->days }}</div>
-                    <div class="metric-label">Days Calculated</div>
-                </div>
+    <div class="p-5 sm:p-6">
+        {{-- Metric Boxes --}}
+        <div class="mb-6 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                <div class="tabular font-mono text-2xl font-bold text-ink" dir="ltr">{{ $result->days }}</div>
+                <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Days Calculated</div>
             </div>
-            <div class="col-md-4">
-                <div class="metric-box">
-                    <div class="metric-value font-monospace" style="font-size:1.4rem;">{{ $result->getFormattedFactor(6) }}</div>
-                    <div class="metric-label">Day Count Factor</div>
-                </div>
+            <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                <div class="tabular font-mono text-xl font-bold text-ink" dir="ltr">{{ $result->getFormattedFactor(6) }}</div>
+                <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Day Count Factor</div>
             </div>
             @if($result->interestAmount !== null)
-                <div class="col-md-4">
-                    <div class="metric-box" style="border-color:rgba(201,162,39,.3);background:rgba(201,162,39,.04);">
-                        <div class="metric-value font-monospace">${{ number_format($result->interestAmount, 2) }}</div>
-                        <div class="metric-label">Interest Amount</div>
-                    </div>
+                <div class="rounded-lg border border-gold/30 bg-gold/5 p-4 text-center">
+                    <div class="tabular font-mono text-2xl font-bold text-gold-dark" dir="ltr">${{ number_format($result->interestAmount, 2) }}</div>
+                    <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Interest Amount</div>
                 </div>
             @endif
         </div>
 
-        {{-- Calculation Steps Accordion --}}
-        <div class="steps-accordion accordion" id="calculationStepsAccordion">
-            <div class="accordion-item border-0" style="border-radius:.625rem;overflow:hidden;border:1px solid #e2e8f0;">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#stepsCollapse"
-                            style="font-size:.875rem;font-weight:600;">
-                        <i class="bi bi-list-check me-2" style="color:var(--gold);"></i>
-                        View Step-by-Step Breakdown
-                    </button>
-                </h2>
-                <div id="stepsCollapse" class="accordion-collapse collapse show">
-                    <div class="accordion-body pt-2">
-                        @foreach($result->steps as $index => $step)
-                            <div class="d-flex align-items-start mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}"
-                                 style="border-color:#f1f5f9!important;">
-                                <span class="step-number flex-shrink-0" style="margin-top:1px;">{{ $index + 1 }}</span>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="fw-semibold" style="font-size:.875rem;color:#0f172a;">{{ $step['title'] }}</span>
-                                        @if($step['applied'])
-                                            <span class="badge" style="background:rgba(201,162,39,.12);color:#a07d18;font-size:.7rem;font-weight:700;border:1px solid rgba(201,162,39,.25);">Applied</span>
-                                        @else
-                                            <span class="badge bg-light text-muted" style="font-size:.7rem;">Skipped</span>
-                                        @endif
-                                    </div>
-                                    <p class="text-muted mb-2" style="font-size:.825rem;line-height:1.55;">{{ $step['description'] }}</p>
-                                    <div class="font-monospace" style="background:#0f172a;color:#c9a227;padding:.625rem .875rem;border-radius:.375rem;font-size:.78rem;line-height:1.6;border-left:3px solid #c9a227;">
-                                        {!! nl2br(e($step['formula'])) !!}
-                                    </div>
-                                </div>
+        {{-- Calculation Steps (Alpine collapse) --}}
+        <div class="overflow-hidden rounded-lg border border-line" x-data="{ open: true }">
+            <button type="button"
+                    class="flex w-full items-center justify-between gap-2 bg-surface-muted px-4 py-3 text-left text-sm font-semibold text-ink hover:bg-brand-light print:hidden"
+                    @click="open = !open">
+                <span>View Step-by-Step Breakdown</span>
+                <svg class="h-4 w-4 shrink-0 text-ink-faint transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                </svg>
+            </button>
+            <div x-show="open" class="border-t border-line px-4 pt-4 print:!block">
+                @foreach($result->steps as $index => $step)
+                    <div class="mb-4 flex items-start gap-3 pb-4 {{ !$loop->last ? 'border-b border-line' : '' }}">
+                        <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand">{{ $index + 1 }}</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-1 flex flex-wrap items-center gap-2">
+                                <span class="text-sm font-semibold text-ink">{{ $step['title'] }}</span>
+                                @if($step['applied'])
+                                    <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-0.5 text-[0.7rem] font-bold text-gold-dark">Applied</span>
+                                @else
+                                    <span class="rounded-full bg-surface-muted px-2 py-0.5 text-[0.7rem] font-semibold text-ink-faint">Skipped</span>
+                                @endif
                             </div>
-                        @endforeach
+                            <p class="mb-2 text-sm leading-relaxed text-ink-faint">{{ $step['description'] }}</p>
+                            <div class="rounded-lg border-l-4 border-gold bg-ink px-3.5 py-2.5 font-mono text-xs leading-relaxed text-gold" dir="ltr">
+                                {!! nl2br(e($step['formula'])) !!}
+                            </div>
+                        </div>
                     </div>
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- Guest signup CTA --}}
         @guest
-        <div class="alert mt-4 mb-0 d-flex align-items-center gap-3"
-             style="background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:.625rem;padding:.875rem 1.25rem;">
-            <i class="bi bi-bookmark-star-fill flex-shrink-0" style="color:#c9a227;font-size:1.25rem;"></i>
-            <div class="flex-grow-1">
-                <div class="fw-semibold" style="font-size:.875rem;color:#0f172a;">Sign up to save your calculations</div>
-                <div class="text-muted" style="font-size:.8rem;">Create a free account to save, name, and revisit any calculation.</div>
+        <div class="mt-6 flex items-center gap-4 rounded-lg border border-gold/30 bg-gold/5 px-4 py-3.5 print:hidden">
+            <svg class="h-6 w-6 shrink-0 text-gold" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 3a2 2 0 0 0-2 2v16l8-4 8 4V5a2 2 0 0 0-2-2H6zm6 4 1.2 2.4 2.7.4-1.95 1.9.45 2.7L12 13.1l-2.4 1.3.45-2.7L8.1 9.8l2.7-.4L12 7z"/>
+            </svg>
+            <div class="flex-1">
+                <div class="text-sm font-semibold text-ink">Sign up to save your calculations</div>
+                <div class="text-xs text-ink-faint">Create a free account to save, name, and revisit any calculation.</div>
             </div>
-            <a href="{{ route('register') }}" class="btn btn-gold btn-sm flex-shrink-0 px-3">Sign Up Free</a>
+            <a href="{{ route('register') }}" class="btn-primary shrink-0 px-4 py-2 text-xs">Sign Up Free</a>
         </div>
         @endguest
 
         {{-- Action Buttons --}}
-        <div class="row g-2 mt-4">
-            <div class="col-6 col-md-3">
-                <button type="button" class="btn btn-outline-gold w-100 btn-sm" onclick="window.print()">
-                    <i class="bi bi-printer me-1"></i>Print
-                </button>
-            </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ route('comparison.index') }}" class="btn btn-outline-gold w-100 btn-sm">
-                    <i class="bi bi-bar-chart me-1"></i>Compare
-                </a>
-            </div>
+        <div class="mt-6 grid grid-cols-2 gap-2 md:grid-cols-4 print:hidden">
+            <button type="button" class="btn-secondary text-xs" onclick="window.print()">Print</button>
+            <a href="{{ route('comparison.index') }}" class="btn-secondary text-xs">Compare</a>
             @auth
-                <div class="col-6 col-md-3">
-                    <button type="button" class="btn btn-outline-gold w-100 btn-sm"
-                            data-bs-toggle="modal" data-bs-target="#saveCalculationModal">
-                        <i class="bi bi-bookmark me-1"></i>Save
-                    </button>
-                </div>
+                <button type="button" class="btn-secondary text-xs"
+                        onclick="window.dispatchEvent(new CustomEvent('open-save-modal'))">Save</button>
             @endauth
-            <div class="col-6 col-md-3">
-                <button type="button" class="btn btn-outline-gold w-100 btn-sm" onclick="shareCalculation()">
-                    <i class="bi bi-share me-1"></i>Share
-                </button>
-            </div>
+            <button type="button" class="btn-secondary text-xs" onclick="shareCalculation()">Share</button>
         </div>
     </div>
 </div>
 
-{{-- Save Modal --}}
+{{-- Save Modal (Alpine) --}}
 @auth
-<div class="modal fade" id="saveCalculationModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius:.875rem;overflow:hidden;border:none;">
-            <div class="card-header-navy p-3 d-flex align-items-center justify-content-between">
-                <h5 class="mb-0 fw-bold" style="font-size:1rem;">Save Calculation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="saveCalculationForm" action="{{ route('calculator.save', $calculationId ?? 0) }}" method="POST">
-                @csrf
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="calculation_name" class="form-label fw-semibold" style="font-size:.875rem;">Name</label>
-                        <input type="text" class="form-control" id="calculation_name" name="name" required
-                               placeholder="e.g. Q1 2024 Bond Calculation"
-                               style="border-color:#e2e8f0;border-radius:.5rem;">
-                    </div>
-                    <div class="mb-3">
-                        <label for="calculation_notes" class="form-label fw-semibold" style="font-size:.875rem;">Notes <span class="fw-normal text-muted">(Optional)</span></label>
-                        <textarea class="form-control" id="calculation_notes" name="notes" rows="3"
-                                  placeholder="Add any notes about this calculation..."
-                                  style="border-color:#e2e8f0;border-radius:.5rem;"></textarea>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="is_favorite" name="is_favorite" value="1"
-                               style="accent-color:var(--gold);">
-                        <label class="form-check-label" for="is_favorite" style="font-size:.875rem;">
-                            <i class="bi bi-star-fill" style="color:var(--gold);"></i> Mark as favourite
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-gold px-4">Save Calculation</button>
-                </div>
-            </form>
+<div x-data="{ open: false }"
+     x-on:open-save-modal.window="open = true"
+     x-on:close-save-modal.window="open = false"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 print:hidden">
+    <div class="absolute inset-0 bg-ink/50" @click="open = false"></div>
+    <div class="card relative w-full max-w-md overflow-hidden" @keydown.escape.window="open = false">
+        <div class="flex items-center justify-between border-b border-line bg-brand px-5 py-4">
+            <h2 class="text-base font-bold text-white">Save Calculation</h2>
+            <button type="button" class="rounded-lg p-1 text-white/70 hover:text-white" @click="open = false" aria-label="Close">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
         </div>
+        <form id="saveCalculationForm" action="{{ route('calculator.save', $calculationId ?? 0) }}" method="POST">
+            @csrf
+            <div class="space-y-4 p-5">
+                <div>
+                    <label for="calculation_name" class="field-label">Name</label>
+                    <input type="text" class="field-input" id="calculation_name" name="name" required
+                           placeholder="e.g. Q1 2024 Bond Calculation">
+                </div>
+                <div>
+                    <label for="calculation_notes" class="field-label">Notes <span class="font-normal text-ink-faint">(Optional)</span></label>
+                    <textarea class="field-input" id="calculation_notes" name="notes" rows="3"
+                              placeholder="Add any notes about this calculation..."></textarea>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-ink" for="is_favorite">
+                    <input type="checkbox" id="is_favorite" name="is_favorite" value="1"
+                           class="h-4 w-4 rounded border-line text-brand focus:ring-brand">
+                    <span><span class="text-gold">★</span> Mark as favourite</span>
+                </label>
+            </div>
+            <div class="flex justify-end gap-2 px-5 pb-5">
+                <button type="button" class="btn-secondary" @click="open = false">Cancel</button>
+                <button type="submit" class="btn-primary">Save Calculation</button>
+            </div>
+        </form>
     </div>
 </div>
 @endauth
+
+{{-- Toast --}}
+<div x-data="{ show: false, msg: '', ok: true }"
+     x-on:toast.window="msg = $event.detail.msg; ok = $event.detail.ok ?? true; show = true; clearTimeout($el._t); $el._t = setTimeout(() => show = false, 3500)"
+     x-show="show" x-cloak x-transition.opacity
+     class="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-card-hover print:hidden"
+     :class="ok ? 'bg-ink' : 'bg-red-600'">
+    <span x-text="msg"></span>
+</div>
 
 @push('scripts')
 <script>
@@ -167,12 +151,16 @@
         }
     });
 
+    function notify(msg, ok = true) {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { msg, ok } }));
+    }
+
     function shareCalculation() {
         const url = window.location.href;
         if (navigator.share) {
             navigator.share({ title: 'Day Count Calculation', url }).catch(() => {});
         } else {
-            navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+            navigator.clipboard.writeText(url).then(() => notify('Link copied to clipboard!'));
         }
     }
 
@@ -190,22 +178,15 @@
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('saveCalculationModal')).hide();
-                alert('Calculation saved successfully!');
+                window.dispatchEvent(new CustomEvent('close-save-modal'));
+                notify('Calculation saved successfully!');
                 this.reset();
             } else {
-                alert('Error: ' + (data.message || 'Unknown error'));
+                notify('Error: ' + (data.message || 'Unknown error'), false);
             }
         })
-        .catch(() => alert('An error occurred while saving.'));
+        .catch(() => notify('An error occurred while saving.', false));
     });
     @endauth
 </script>
 @endpush
-
-<style>
-@media print {
-    .btn, .accordion-button { display: none !important; }
-    .accordion-collapse { display: block !important; }
-}
-</style>

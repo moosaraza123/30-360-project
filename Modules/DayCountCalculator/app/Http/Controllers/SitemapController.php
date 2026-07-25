@@ -19,8 +19,21 @@ class SitemapController extends Controller
     private function buildUrls(): array
     {
         $viewsPath = module_path('DayCountCalculator', 'resources/views');
+        $gulfViewsPath = module_path('GulfCalculators', 'resources/views');
 
         $urls = [
+            [
+                'loc' => url('/'),
+                'priority' => '1.0',
+                'changefreq' => 'weekly',
+                'lastmod' => $this->fileLastmod(resource_path('views/home.blade.php')),
+            ],
+            [
+                'loc' => url('/ar'),
+                'priority' => '1.0',
+                'changefreq' => 'weekly',
+                'lastmod' => $this->fileLastmod(resource_path('views/home.blade.php')),
+            ],
             [
                 'loc' => url('/calculator'),
                 'priority' => '1.0',
@@ -44,6 +57,20 @@ class SitemapController extends Controller
                 'changefreq' => 'monthly',
                 'lastmod' => $educationalLastmod,
             ];
+        }
+
+        // Gulf calculators — English root + Arabic /ar twin for every page
+        $gulfLastmod = $this->fileLastmod("{$gulfViewsPath}/gratuity-uae.blade.php");
+
+        foreach (array_keys(config('gulfcalculators.pages', [])) as $slug) {
+            foreach (['', 'ar/'] as $prefix) {
+                $urls[] = [
+                    'loc' => url($prefix.$slug),
+                    'priority' => '0.9',
+                    'changefreq' => 'monthly',
+                    'lastmod' => $gulfLastmod,
+                ];
+            }
         }
 
         return $urls;

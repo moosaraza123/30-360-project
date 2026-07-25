@@ -1,3 +1,74 @@
+/* Hisabi platform styles — Tailwind + IBM Plex (EN + Arabic) */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+@import '@fontsource/ibm-plex-sans-arabic/400.css';
+@import '@fontsource/ibm-plex-sans-arabic/500.css';
+@import '@fontsource/ibm-plex-sans-arabic/600.css';
+@import '@fontsource/ibm-plex-sans-arabic/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+        @apply antialiased;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    html[dir='rtl'] body {
+        @apply font-arabic;
+    }
+
+    body {
+        @apply bg-surface-muted text-ink-soft font-sans;
+    }
+
+    /* Financial figures should always align in tables */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-5 py-2.5
+            text-sm font-semibold text-white transition hover:bg-brand-dark
+            focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2
+            disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line
+            bg-white px-5 py-2.5 text-sm font-semibold text-ink transition
+            hover:border-brand hover:text-brand focus:outline-none focus:ring-2
+            focus:ring-brand focus:ring-offset-2;
+    }
+
+    .card {
+        @apply rounded-card border border-line bg-white shadow-card;
+    }
+
+    .field-label {
+        @apply mb-1.5 block text-sm font-semibold text-ink;
+    }
+
+    .field-input {
+        @apply block w-full rounded-lg border-line text-ink shadow-sm
+            focus:border-brand focus:ring-brand;
+    }
+
+    .field-help {
+        @apply mt-1 text-xs text-ink-faint;
+    }
+
+    .trust-source {
+        @apply mt-2 flex items-start gap-2 rounded-lg bg-brand-light px-4 py-3 text-xs
+            leading-relaxed text-ink-soft;
+    }
+}

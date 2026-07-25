@@ -1,154 +1,139 @@
-@extends('daycountcalculator::layouts.master')
+@extends('layouts.platform')
 
 @section('title', 'Day Count Calculator')
+@section('meta_description', 'Calculate accrued interest and day count factors for bonds, loans and derivatives using 9 professional day count conventions with step-by-step breakdowns.')
 
 @section('content')
+<div class="mx-auto max-w-content px-4 py-10 sm:px-6">
 
-{{-- Page Hero --}}
-<div class="page-hero">
-    <div class="container">
-        <div class="hero-badge">Professional Financial Calculator</div>
-        <h1 class="mb-1">Day Count <span class="gold-accent">Convention</span> Calculator</h1>
-        <p class="lead">Calculate accrued interest and day count factors for bonds, loans &amp; derivatives</p>
+    {{-- Page header --}}
+    <div class="mb-8">
+        <span class="inline-block rounded-full bg-brand-light px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">Professional Financial Calculator</span>
+        <h1 class="mt-3 text-2xl font-bold text-ink sm:text-3xl">Day Count <span class="text-gold">Convention</span> Calculator</h1>
+        <p class="mt-2 text-ink-faint">Calculate accrued interest and day count factors for bonds, loans &amp; derivatives</p>
     </div>
-</div>
 
-<div class="container pb-5">
-    <div class="row g-4">
+    <div class="grid gap-6 lg:grid-cols-3">
 
         {{-- ── Calculator Form (Left) ──────────────────────────────── --}}
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+        <div class="lg:col-span-2">
+            <div class="card p-6 sm:p-8">
+                <form id="calculatorForm" action="{{ route('calculator.calculate') }}" method="POST">
+                    @csrf
 
-                    <form id="calculatorForm" action="{{ route('calculator.calculate') }}" method="POST">
-                        @csrf
+                    {{-- Convention Selector --}}
+                    <div class="mb-6">
+                        <span class="mb-3 block text-xs font-bold uppercase tracking-wider text-ink">Select Day Count Convention</span>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            @foreach($conventions as $convention)
+                                <label class="block cursor-pointer" for="convention_{{ $loop->index }}">
+                                    <input type="radio"
+                                           class="peer sr-only"
+                                           name="convention_type"
+                                           id="convention_{{ $loop->index }}"
+                                           value="{{ $convention['type'] }}"
+                                           required
+                                           data-convention-info="{{ json_encode($convention) }}">
+                                    <span class="block rounded-lg border border-line bg-white px-4 py-3 transition hover:border-brand/60 peer-checked:border-brand peer-checked:bg-brand-light peer-checked:ring-1 peer-checked:ring-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand">
+                                        <span class="block text-sm font-semibold text-ink">{{ $convention['name'] }}</span>
+                                        <span class="block text-xs text-ink-faint">{{ $convention['alias'] }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('convention_type')
+                            <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        {{-- Convention Selector --}}
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-navy mb-3" style="font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;color:#0f172a;">
-                                Select Day Count Convention
-                            </label>
-                            <div class="row g-2 convention-selector">
-                                @foreach($conventions as $convention)
-                                    <div class="col-md-6">
-                                        <input type="radio"
-                                               class="btn-check"
-                                               name="convention_type"
-                                               id="convention_{{ $loop->index }}"
-                                               value="{{ $convention['type'] }}"
-                                               required
-                                               data-convention-info="{{ json_encode($convention) }}">
-                                        <label class="btn convention-card w-100 text-start position-relative" for="convention_{{ $loop->index }}">
-                                            <div class="convention-name">{{ $convention['name'] }}</div>
-                                            <div class="convention-alias">{{ $convention['alias'] }}</div>
-                                        </label>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @error('convention_type')
-                                <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                    {{-- Date Inputs --}}
+                    <div class="mb-6 grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="start_date" class="field-label">Start Date <span class="text-red-600">*</span></label>
+                            <input type="date" id="start_date" name="start_date"
+                                   value="{{ old('start_date') }}" required
+                                   class="field-input @error('start_date') border-red-400 @enderror" dir="ltr">
+                            @error('start_date')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        <div>
+                            <label for="end_date" class="field-label">End Date <span class="text-red-600">*</span></label>
+                            <input type="date" id="end_date" name="end_date"
+                                   value="{{ old('end_date') }}" required
+                                   class="field-input @error('end_date') border-red-400 @enderror" dir="ltr">
+                            @error('end_date')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
 
-                        {{-- Date Inputs --}}
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label for="start_date" class="form-label fw-semibold" style="font-size:.875rem;color:#0f172a;">
-                                    Start Date <span class="text-danger">*</span>
-                                </label>
-                                <input type="date"
-                                       class="form-control form-control-lg @error('start_date') is-invalid @enderror"
-                                       id="start_date" name="start_date"
-                                       value="{{ old('start_date') }}" required
-                                       style="border-color:#e2e8f0;border-radius:.5rem;">
-                                @error('start_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                    {{-- Optional Interest --}}
+                    <div class="mb-6 rounded-lg border border-line bg-surface-muted p-4">
+                        <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink">
+                            Interest Calculation
+                            <span class="ml-1 font-normal normal-case tracking-normal text-ink-faint">Optional</span>
+                        </h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="principal" class="field-label">Principal Amount ($)</label>
+                                <input type="number" id="principal" name="principal" step="0.01" min="0"
+                                       placeholder="e.g. 1,000,000" value="{{ old('principal') }}"
+                                       class="field-input @error('principal') border-red-400 @enderror" dir="ltr">
+                                @error('principal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
-                            <div class="col-md-6">
-                                <label for="end_date" class="form-label fw-semibold" style="font-size:.875rem;color:#0f172a;">
-                                    End Date <span class="text-danger">*</span>
-                                </label>
-                                <input type="date"
-                                       class="form-control form-control-lg @error('end_date') is-invalid @enderror"
-                                       id="end_date" name="end_date"
-                                       value="{{ old('end_date') }}" required
-                                       style="border-color:#e2e8f0;border-radius:.5rem;">
-                                @error('end_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div>
+                                <label for="interest_rate" class="field-label">Annual Interest Rate (%)</label>
+                                <input type="number" id="interest_rate" name="interest_rate" step="0.001" min="0" max="100"
+                                       placeholder="e.g. 5.5" value="{{ old('interest_rate') }}"
+                                       class="field-input @error('interest_rate') border-red-400 @enderror" dir="ltr">
+                                @error('interest_rate')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
                         </div>
+                    </div>
 
-                        {{-- Optional Interest --}}
-                        <div class="rounded-3 p-3 mb-4" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                            <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">
-                                Interest Calculation
-                                <span class="fw-normal ms-1" style="color:#94a3b8;font-size:.78rem;text-transform:none;letter-spacing:0;">Optional</span>
-                            </h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="principal" class="form-label" style="font-size:.875rem;">Principal Amount ($)</label>
-                                    <input type="number" class="form-control @error('principal') is-invalid @enderror"
-                                           id="principal" name="principal" step="0.01" min="0"
-                                           placeholder="e.g. 1,000,000"
-                                           value="{{ old('principal') }}"
-                                           style="border-color:#e2e8f0;border-radius:.5rem;">
-                                    @error('principal') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="interest_rate" class="form-label" style="font-size:.875rem;">Annual Interest Rate (%)</label>
-                                    <input type="number" class="form-control @error('interest_rate') is-invalid @enderror"
-                                           id="interest_rate" name="interest_rate" step="0.001" min="0" max="100"
-                                           placeholder="e.g. 5.5"
-                                           value="{{ old('interest_rate') }}"
-                                           style="border-color:#e2e8f0;border-radius:.5rem;">
-                                    @error('interest_rate') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Convention Options --}}
-                        <div class="rounded-3 p-3 mb-4" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                            <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">
-                                Convention Options
-                                <span class="fw-normal ms-1" style="color:#94a3b8;font-size:.78rem;text-transform:none;letter-spacing:0;">Optional</span>
-                            </h6>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" value="1"
-                                       id="apply_eom_adjustment" name="apply_eom_adjustment"
-                                       @checked(old('apply_eom_adjustment'))>
-                                <label class="form-check-label" for="apply_eom_adjustment" style="font-size:.875rem;">
+                    {{-- Convention Options --}}
+                    <div class="mb-6 rounded-lg border border-line bg-surface-muted p-4">
+                        <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink">
+                            Convention Options
+                            <span class="ml-1 font-normal normal-case tracking-normal text-ink-faint">Optional</span>
+                        </h2>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-3" for="apply_eom_adjustment">
+                                <input type="checkbox" value="1" id="apply_eom_adjustment" name="apply_eom_adjustment"
+                                       @checked(old('apply_eom_adjustment'))
+                                       class="mt-0.5 h-4 w-4 rounded border-line text-brand focus:ring-brand">
+                                <span class="text-sm text-ink">
                                     Apply end-of-month (EOM) adjustment
-                                    <span class="d-block" style="color:#94a3b8;font-size:.78rem;">30/360 US only: treats end-of-February dates as the 30th (NASD EOM rule)</span>
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="1"
-                                       id="end_date_is_maturity" name="end_date_is_maturity"
-                                       @checked(old('end_date_is_maturity'))>
-                                <label class="form-check-label" for="end_date_is_maturity" style="font-size:.875rem;">
+                                    <span class="block text-xs text-ink-faint">30/360 US only: treats end-of-February dates as the 30th (NASD EOM rule)</span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-3" for="end_date_is_maturity">
+                                <input type="checkbox" value="1" id="end_date_is_maturity" name="end_date_is_maturity"
+                                       @checked(old('end_date_is_maturity'))
+                                       class="mt-0.5 h-4 w-4 rounded border-line text-brand focus:ring-brand">
+                                <span class="text-sm text-ink">
                                     End date is the maturity / termination date
-                                    <span class="d-block" style="color:#94a3b8;font-size:.78rem;">30E/360 ISDA only: a maturity date falling on the last day of February is not rolled to the 30th</span>
-                                </label>
-                            </div>
+                                    <span class="block text-xs text-ink-faint">30E/360 ISDA only: a maturity date falling on the last day of February is not rolled to the 30th</span>
+                                </span>
+                            </label>
                         </div>
+                    </div>
 
-                        {{-- Submit --}}
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-gold btn-lg" id="calculateBtn">
-                                <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
-                                <i class="bi bi-calculator me-2"></i>Calculate
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {{-- Submit --}}
+                    <button type="submit" class="btn-primary w-full" id="calculateBtn">
+                        <svg id="calculateSpinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/>
+                        </svg>
+                        Calculate
+                    </button>
+                </form>
             </div>
 
             {{-- Results --}}
             @if(session('result'))
-                <div class="mt-4">
+                <div class="mt-6">
                     @include('daycountcalculator::calculator.partials.results', [
                         'result' => session('result'),
                         'calculationId' => session('calculation_id')
@@ -158,72 +143,64 @@
         </div>
 
         {{-- ── Sidebar (Right) ─────────────────────────────────────── --}}
-        <div class="col-lg-4">
+        <div class="space-y-4">
 
             {{-- Convention Info Card (shown after selection) --}}
-            <div class="card shadow-sm mb-3 convention-info-card" id="conventionInfoCard" style="display:none;">
-                <div class="card-header card-header-navy d-flex align-items-center gap-2">
-                    <div class="convention-icon">📐</div>
+            <div class="card hidden overflow-hidden" id="conventionInfoCard">
+                <div class="flex items-center gap-3 border-b border-line bg-brand px-4 py-3 text-white">
+                    <div class="text-xl" aria-hidden="true">📐</div>
                     <div>
-                        <div class="fw-bold" id="conventionName" style="font-size:.95rem;">Convention Details</div>
-                        <small style="color:rgba(255,255,255,.55);font-size:.75rem;" id="conventionAlias"></small>
+                        <div class="text-sm font-bold" id="conventionName">Convention Details</div>
+                        <div class="text-xs text-white/60" id="conventionAlias"></div>
                     </div>
                 </div>
-                <div class="card-body p-3">
-                    <p class="text-muted small mb-3" id="conventionDescription" style="line-height:1.6;"></p>
-                    <div class="mb-3">
-                        <div class="fw-semibold mb-1" style="font-size:.8rem;color:#0f172a;text-transform:uppercase;letter-spacing:.05em;">Formula</div>
-                        <div class="formula-block" id="conventionFormula"></div>
+                <div class="p-4">
+                    <p class="mb-4 text-sm leading-relaxed text-ink-faint" id="conventionDescription"></p>
+                    <div class="mb-4">
+                        <div class="mb-1 text-xs font-bold uppercase tracking-wider text-ink">Formula</div>
+                        <div class="rounded-lg border-l-4 border-gold bg-ink px-3 py-2 font-mono text-xs leading-relaxed text-gold" id="conventionFormula" dir="ltr"></div>
                     </div>
-                    <div class="mb-3">
-                        <div class="fw-semibold mb-2" style="font-size:.8rem;color:#0f172a;text-transform:uppercase;letter-spacing:.05em;">Common Uses</div>
-                        <ul class="use-case-list mb-0 ps-3" id="conventionUseCases"></ul>
+                    <div class="mb-4">
+                        <div class="mb-2 text-xs font-bold uppercase tracking-wider text-ink">Common Uses</div>
+                        <ul class="list-disc space-y-1 pl-5 text-sm text-ink-soft" id="conventionUseCases"></ul>
                     </div>
-                    <a href="#" class="btn btn-outline-gold btn-sm w-100" id="learnMoreLink">
-                        <i class="bi bi-book me-1"></i>Learn More
-                    </a>
+                    <a href="#" class="btn-secondary w-full" id="learnMoreLink">Learn More</a>
                 </div>
             </div>
 
             {{-- Quick Tips --}}
-            <div class="card shadow-sm mb-3 tips-card">
-                <div class="card-body p-3">
-                    <div class="tips-title fw-bold mb-2">💡 Quick Tips</div>
-                    <ul class="mb-0 ps-3">
-                        <li class="mb-1">Select a convention to see its description and formula</li>
-                        <li class="mb-1">Dates use YYYY-MM-DD format or the native date picker</li>
-                        <li class="mb-1">Principal &amp; rate are optional — basic calculation works without them</li>
-                        <li class="mb-1">Results include a full step-by-step breakdown</li>
-                        <li>Use the Compare tool to run all conventions side-by-side</li>
-                    </ul>
-                </div>
+            <div class="card p-4">
+                <div class="mb-2 text-sm font-bold text-ink">💡 Quick Tips</div>
+                <ul class="list-disc space-y-1.5 pl-5 text-sm text-ink-soft">
+                    <li>Select a convention to see its description and formula</li>
+                    <li>Dates use YYYY-MM-DD format or the native date picker</li>
+                    <li>Principal &amp; rate are optional — basic calculation works without them</li>
+                    <li>Results include a full step-by-step breakdown</li>
+                    <li>Use the Compare tool to run all conventions side-by-side</li>
+                </ul>
             </div>
 
             {{-- Recent Calculations --}}
             @if($recentCalculations->count() > 0)
-                <div class="card shadow-sm">
-                    <div class="card-header card-header-navy">
-                        <h6 class="mb-0 fw-bold" style="font-size:.875rem;">Recent Calculations</h6>
+                <div class="card overflow-hidden">
+                    <div class="border-b border-line bg-brand px-4 py-3">
+                        <h2 class="text-sm font-bold text-white">Recent Calculations</h2>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="divide-y divide-line">
                         @foreach($recentCalculations as $calc)
-                            <div class="px-3 py-2 border-bottom" style="border-color:#f1f5f9!important;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="fw-semibold" style="font-size:.82rem;color:#0f172a;">{{ $calc->convention_type }}</div>
-                                        <div class="text-muted" style="font-size:.75rem;">
-                                            {{ $calc->start_date->format('M d, Y') }} → {{ $calc->end_date->format('M d, Y') }}
-                                        </div>
+                            <div class="flex items-center justify-between gap-3 px-4 py-2.5">
+                                <div>
+                                    <div class="text-sm font-semibold text-ink">{{ $calc->convention_type }}</div>
+                                    <div class="text-xs text-ink-faint" dir="ltr">
+                                        {{ $calc->start_date->format('M d, Y') }} → {{ $calc->end_date->format('M d, Y') }}
                                     </div>
-                                    <span class="badge badge-gold">{{ $calc->days_calculated }}d</span>
                                 </div>
+                                <span class="tabular shrink-0 rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-bold text-gold-dark">{{ $calc->days_calculated }}d</span>
                             </div>
                         @endforeach
-                        <div class="p-2">
-                            <a href="{{ route('calculator.history') }}" class="btn btn-outline-gold btn-sm w-100" style="font-size:.8rem;">
-                                View All History
-                            </a>
-                        </div>
+                    </div>
+                    <div class="border-t border-line p-3">
+                        <a href="{{ route('calculator.history') }}" class="btn-secondary w-full text-xs">View All History</a>
                     </div>
                 </div>
             @endif
@@ -254,15 +231,14 @@
             });
 
             document.getElementById('learnMoreLink').href = `/calculator/learn/${info.slug}`;
-            card.style.display = 'block';
+            card.classList.remove('hidden');
         });
     });
 
     document.getElementById('calculatorForm').addEventListener('submit', function() {
         const btn = document.getElementById('calculateBtn');
-        const spinner = btn.querySelector('.spinner-border');
         btn.disabled = true;
-        spinner.classList.remove('d-none');
+        document.getElementById('calculateSpinner').classList.remove('hidden');
     });
 </script>
 @endpush

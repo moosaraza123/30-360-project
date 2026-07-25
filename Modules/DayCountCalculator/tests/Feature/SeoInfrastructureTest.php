@@ -37,7 +37,7 @@ class SeoInfrastructureTest extends TestCase
         $this->assertNotEmpty($matches[1]);
 
         foreach ($matches[1] as $url) {
-            $path = parse_url($url, PHP_URL_PATH);
+            $path = parse_url($url, PHP_URL_PATH) ?? '/';
             $this->get($path)->assertOk();
         }
     }

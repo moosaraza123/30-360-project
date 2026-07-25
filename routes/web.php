@@ -3,11 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+// Public platform homepage (English + Arabic)
+Route::view('/', 'home')->name('home');
+Route::view('/ar', 'home')->name('home.ar');
 
-Route::get('/', function () {
+// Authenticated user dashboard
+Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

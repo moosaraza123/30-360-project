@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Day Count Calculator') }}</title>
+    <title>{{ config('app.name', 'Hisabi') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +24,7 @@
         .auth-brand {
             width: 42%;
             flex-shrink: 0;
-            background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 55%, #0c2340 100%);
+            background: linear-gradient(160deg, #0B1526 0%, #0A5F4E 55%, #0B1526 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -62,7 +62,7 @@
 
         .auth-brand-logo-icon {
             width: 44px; height: 44px;
-            background: linear-gradient(135deg, #c9a227, #a07d18);
+            background: linear-gradient(135deg, #0E7C66, #0A5F4E);
             border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
@@ -207,7 +207,7 @@
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             color: #fff;
-            background: linear-gradient(135deg, #c9a227 0%, #a07d18 100%);
+            background: linear-gradient(135deg, #0E7C66 0%, #0A5F4E 100%);
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -225,7 +225,7 @@
         .auth-btn:active { transform: translateY(0); opacity: 1; }
 
         .auth-link {
-            color: #1e3a5f;
+            color: #0A5F4E;
             font-size: 0.875rem;
             font-weight: 500;
             text-decoration: none;
@@ -276,7 +276,7 @@
 
         .auth-checkbox {
             width: 15px; height: 15px;
-            accent-color: #c9a227;
+            accent-color: #0E7C66;
             cursor: pointer;
             flex-shrink: 0;
         }
@@ -286,7 +286,7 @@
         .auth-page-heading {
             font-size: 1.55rem;
             font-weight: 700;
-            color: #0f172a;
+            color: #0B1526;
             margin-bottom: 0.35rem;
         }
 
@@ -330,20 +330,20 @@
                 </svg>
             </div>
             <div class="auth-brand-logo-text">
-                Day Count Calculator
-                <span>Professional Finance Tools</span>
+                Hisabi
+                <span>Trusted Gulf Finance Calculators</span>
             </div>
         </div>
 
         <div class="auth-brand-divider"></div>
 
         <h1 class="auth-brand-headline">
-            Precision calculations<br>for <em>financial professionals</em>
+            Trusted financial calculators<br>for the <em>Gulf</em>
         </h1>
 
         <p class="auth-brand-tagline">
-            Industry-standard day count conventions used across bonds, loans,
-            swaps and derivatives — computed with full step-by-step transparency.
+            Gratuity, VAT, zakat and professional day count calculators —
+            source-cited, bilingual, and computed with full step-by-step transparency.
         </p>
 
         <ul class="auth-brand-features">
@@ -353,7 +353,7 @@
                         <path d="M2 5l2.2 2.2L8 3" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                9 day count conventions — 30/360, Actual/365, ISDA &amp; more
+                Gratuity, VAT &amp; zakat calculators for UAE and KSA — in English &amp; Arabic
             </li>
             <li>
                 <div class="auth-feature-icon">
@@ -361,7 +361,7 @@
                         <path d="M2 5l2.2 2.2L8 3" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                Full audit trail with step-by-step calculation breakdown
+                Every result cites the official law and shows its full calculation
             </li>
             <li>
                 <div class="auth-feature-icon">
@@ -369,7 +369,7 @@
                         <path d="M2 5l2.2 2.2L8 3" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
-                Save calculations, export to Excel &amp; PDF, compare conventions
+                Save calculations, export to PDF &amp; CSV, compare conventions
             </li>
         </ul>
     </aside>

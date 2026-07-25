@@ -1,139 +1,158 @@
-@extends('daycountcalculator::layouts.master')
+@extends('layouts.platform')
 
 @section('title', 'Saved Calculations')
 
 @section('content')
+<div class="mx-auto max-w-content px-4 py-10 sm:px-6">
 
-{{-- Page Hero --}}
-<div class="page-hero">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <div class="hero-badge">Your Collection</div>
-                <h1 class="mb-1">Saved <span class="gold-accent">Calculations</span></h1>
-                <p class="mb-0">Your saved calculations — {{ $savedCalculations->count() }} total</p>
-            </div>
-            <a href="{{ route('calculator.index') }}" class="btn btn-gold d-none d-md-inline-flex align-items-center gap-2">
-                <i class="bi bi-calculator"></i> New Calculation
-            </a>
+    {{-- Page header --}}
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <span class="inline-block rounded-full bg-brand-light px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">Your Collection</span>
+            <h1 class="mt-3 text-2xl font-bold text-ink sm:text-3xl">Saved <span class="text-gold">Calculations</span></h1>
+            <p class="mt-2 text-ink-faint">Your saved calculations — {{ $savedCalculations->count() }} total</p>
         </div>
+        <a href="{{ route('calculator.index') }}" class="btn-primary hidden md:inline-flex">New Calculation</a>
     </div>
-</div>
 
-<div class="container pb-5">
     @if($savedCalculations->isEmpty())
-        <div class="card shadow-sm">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-bookmark" style="font-size:3rem;color:#94a3b8;"></i>
-                <h5 class="mt-3 fw-bold" style="color:#0f172a;">No Saved Calculations</h5>
-                <p class="text-muted">Save your important calculations to access them later.</p>
-                <a href="{{ route('calculator.index') }}" class="btn btn-gold mt-2">
-                    <i class="bi bi-calculator me-2"></i>Create a Calculation
-                </a>
+        <div class="card p-10 text-center">
+            <svg class="mx-auto h-12 w-12 text-ink-faint" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1Z"/>
+            </svg>
+            <h2 class="mt-4 text-lg font-bold text-ink">No Saved Calculations</h2>
+            <p class="mt-1 text-sm text-ink-faint">Save your important calculations to access them later.</p>
+            <div class="mt-5">
+                <a href="{{ route('calculator.index') }}" class="btn-primary">Create a Calculation</a>
             </div>
         </div>
     @else
-        {{-- Filter Tabs --}}
-        <ul class="nav nav-tabs mb-4 border-0" id="savedTabs" role="tablist" style="gap:.5rem;">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active rounded-3 border-0 fw-semibold" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button"
-                        style="background:#f8fafc;color:#475569;"
-                        onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(201,162,39,.08)'"
-                        onmouseout="if(!this.classList.contains('active')) this.style.background='#f8fafc'">
-                    All <span style="background:var(--gold);color:var(--navy-dark);padding:.125rem .5rem;border-radius:100px;font-size:.75rem;font-weight:700;margin-left:.25rem;">{{ $savedCalculations->count() }}</span>
+        <div x-data="{ tab: 'all' }">
+            {{-- Filter Tabs --}}
+            <div class="mb-6 flex flex-wrap gap-2">
+                <button type="button" @click="tab = 'all'"
+                        class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+                        :class="tab === 'all' ? 'bg-brand text-white' : 'bg-white text-ink-soft border border-line hover:border-brand hover:text-brand'">
+                    All
+                    <span class="tabular rounded-full bg-gold px-2 py-0.5 text-xs font-bold text-ink" id="countAll">{{ $savedCalculations->count() }}</span>
                 </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-3 border-0 fw-semibold" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button"
-                        style="background:#f8fafc;color:#475569;"
-                        onmouseover="if(!this.classList.contains('active')) this.style.background='rgba(201,162,39,.08)'"
-                        onmouseout="if(!this.classList.contains('active')) this.style.background='#f8fafc'">
-                    <i class="bi bi-star-fill" style="color:var(--gold);"></i> Favorites <span style="background:var(--gold);color:var(--navy-dark);padding:.125rem .5rem;border-radius:100px;font-size:.75rem;font-weight:700;margin-left:.25rem;">{{ $savedCalculations->where('is_favorite', true)->count() }}</span>
+                <button type="button" @click="tab = 'favorites'"
+                        class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition"
+                        :class="tab === 'favorites' ? 'bg-brand text-white' : 'bg-white text-ink-soft border border-line hover:border-brand hover:text-brand'">
+                    <span class="text-gold">★</span> Favorites
+                    <span class="tabular rounded-full bg-gold px-2 py-0.5 text-xs font-bold text-ink" id="countFav">{{ $savedCalculations->where('is_favorite', true)->count() }}</span>
                 </button>
-            </li>
-        </ul>
+            </div>
 
-        <style>
-            .nav-tabs .nav-link.active {
-                background: linear-gradient(135deg, var(--navy-dark), var(--navy-mid)) !important;
-                color: #fff !important;
-            }
-        </style>
-
-        <div class="tab-content" id="savedTabsContent">
             {{-- All Calculations Tab --}}
-            <div class="tab-pane fade show active" id="all" role="tabpanel">
+            <div x-show="tab === 'all'">
                 @include('daycountcalculator::calculator.partials.saved-list', ['calculations' => $savedCalculations])
             </div>
 
             {{-- Favorites Tab --}}
-            <div class="tab-pane fade" id="favorites" role="tabpanel">
+            <div x-show="tab === 'favorites'" x-cloak>
                 @include('daycountcalculator::calculator.partials.saved-list', ['calculations' => $savedCalculations->where('is_favorite', true)])
             </div>
         </div>
     @endif
 </div>
 
-{{-- Calculation Details Modal --}}
-<div class="modal fade" id="calculationDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border-radius:.875rem;border:none;">
-            <div class="card-header-navy p-3 d-flex align-items-center justify-content-between">
-                <h5 class="mb-0 fw-bold">Calculation Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4" id="calculationDetailsContent">
-                <div class="text-center py-4">
-                    <div class="spinner-border" style="color:var(--gold);" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </div>
+{{-- Calculation Details Modal (Alpine) --}}
+<div x-data="{ open: false }"
+     x-on:open-details-modal.window="open = true"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/50" @click="open = false"></div>
+    <div class="card relative flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden" @keydown.escape.window="open = false">
+        <div class="flex items-center justify-between border-b border-line bg-brand px-5 py-4">
+            <h2 class="text-base font-bold text-white">Calculation Details</h2>
+            <button type="button" class="rounded-lg p-1 text-white/70 hover:text-white" @click="open = false" aria-label="Close">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <div class="overflow-y-auto p-5" id="calculationDetailsContent">
+            <p class="py-4 text-center text-sm text-ink-faint">Loading…</p>
         </div>
     </div>
 </div>
 
-{{-- Edit Saved Calculation Modal --}}
-<div class="modal fade" id="editSavedCalculationModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="border-radius:.875rem;border:none;">
-            <div class="card-header-navy p-3 d-flex align-items-center justify-content-between">
-                <h5 class="mb-0 fw-bold">Edit Saved Calculation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+{{-- Edit Saved Calculation Modal (Alpine) --}}
+<div x-data="{ open: false }"
+     x-on:open-edit-modal.window="open = true"
+     x-on:close-edit-modal.window="open = false"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/50" @click="open = false"></div>
+    <div class="card relative w-full max-w-md overflow-hidden" @keydown.escape.window="open = false">
+        <div class="flex items-center justify-between border-b border-line bg-brand px-5 py-4">
+            <h2 class="text-base font-bold text-white">Edit Saved Calculation</h2>
+            <button type="button" class="rounded-lg p-1 text-white/70 hover:text-white" @click="open = false" aria-label="Close">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <form id="editSavedCalculationForm">
+            <input type="hidden" id="edit_saved_id" name="saved_id">
+            <div class="space-y-4 p-5">
+                <div>
+                    <label for="edit_name" class="field-label">Name</label>
+                    <input type="text" class="field-input" id="edit_name" name="name" required>
+                </div>
+                <div>
+                    <label for="edit_notes" class="field-label">Notes</label>
+                    <textarea class="field-input" id="edit_notes" name="notes" rows="3"></textarea>
+                </div>
+                <label class="flex items-center gap-2 text-sm text-ink" for="edit_is_favorite">
+                    <input type="checkbox" id="edit_is_favorite" name="is_favorite"
+                           class="h-4 w-4 rounded border-line text-brand focus:ring-brand">
+                    <span><span class="text-gold">★</span> Mark as favourite</span>
+                </label>
             </div>
-            <form id="editSavedCalculationForm">
-                <div class="modal-body p-4">
-                    <input type="hidden" id="edit_saved_id" name="saved_id">
-                    <div class="mb-3">
-                        <label for="edit_name" class="form-label fw-semibold" style="font-size:.875rem;">Name</label>
-                        <input type="text" class="form-control" id="edit_name" name="name" required
-                               style="border-color:#e2e8f0;border-radius:.5rem;">
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_notes" class="form-label fw-semibold" style="font-size:.875rem;">Notes</label>
-                        <textarea class="form-control" id="edit_notes" name="notes" rows="3"
-                                  style="border-color:#e2e8f0;border-radius:.5rem;"></textarea>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="edit_is_favorite" name="is_favorite"
-                               style="accent-color:var(--gold);">
-                        <label class="form-check-label" for="edit_is_favorite" style="font-size:.875rem;">
-                            <i class="bi bi-star-fill" style="color:var(--gold);"></i> Mark as favourite
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-gold px-4">Save Changes</button>
-                </div>
-            </form>
+            <div class="flex justify-end gap-2 px-5 pb-5">
+                <button type="button" class="btn-secondary" @click="open = false">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Delete Confirmation Modal (Alpine) --}}
+<div x-data="{ open: false, id: null, name: '' }"
+     x-on:confirm-delete.window="id = $event.detail.id; name = $event.detail.name; open = true"
+     x-show="open" x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/50" @click="open = false"></div>
+    <div class="card relative w-full max-w-sm overflow-hidden p-6" @keydown.escape.window="open = false">
+        <h2 class="text-base font-bold text-ink">Delete saved calculation?</h2>
+        <p class="mt-2 text-sm text-ink-soft">
+            "<span x-text="name" class="font-semibold text-ink"></span>" will be permanently removed.
+        </p>
+        <div class="mt-5 flex justify-end gap-2">
+            <button type="button" class="btn-secondary" @click="open = false">Cancel</button>
+            <button type="button"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                    @click="open = false; performDelete(id)">
+                Delete
+            </button>
         </div>
     </div>
+</div>
+
+{{-- Toast --}}
+<div x-data="{ show: false, msg: '', ok: true }"
+     x-on:toast.window="msg = $event.detail.msg; ok = $event.detail.ok ?? true; show = true; clearTimeout($el._t); $el._t = setTimeout(() => show = false, 3500)"
+     x-show="show" x-cloak x-transition.opacity
+     class="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-card-hover"
+     :class="ok ? 'bg-ink' : 'bg-red-600'">
+    <span x-text="msg"></span>
 </div>
 @endsection
 
 @push('scripts')
 <script>
+    function notify(msg, ok = true) {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { msg, ok } }));
+    }
+
     function viewCalculation(calculationId) {
         fetch(`/api/calculations/${calculationId}`, {
             headers: {
@@ -143,75 +162,65 @@
         })
         .then(r => r.json())
         .then(data => {
-            const modal = new bootstrap.Modal(document.getElementById('calculationDetailsModal'));
             const content = document.getElementById('calculationDetailsContent');
 
             let html = `
-                <div class="mb-3">
-                    <h6 class="fw-bold" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">Convention Type</h6>
-                    <p class="mb-0" style="color:#475569;">${data.convention_type}</p>
+                <div class="mb-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-ink">Convention Type</h3>
+                    <p class="mt-1 text-sm text-ink-soft">${data.convention_type}</p>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6 class="fw-bold" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">Start Date</h6>
-                        <p class="mb-0" style="color:#475569;">${data.start_date}</p>
+                <div class="mb-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-ink">Start Date</h3>
+                        <p class="mt-1 text-sm text-ink-soft" dir="ltr">${data.start_date}</p>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="fw-bold" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">End Date</h6>
-                        <p class="mb-0" style="color:#475569;">${data.end_date}</p>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-ink">End Date</h3>
+                        <p class="mt-1 text-sm text-ink-soft" dir="ltr">${data.end_date}</p>
                     </div>
                 </div>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="metric-box">
-                            <div class="metric-value font-monospace">${data.days_calculated}</div>
-                            <div class="metric-label">Days</div>
-                        </div>
+                <div class="mb-6 grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                        <div class="tabular font-mono text-xl font-bold text-ink" dir="ltr">${data.days_calculated}</div>
+                        <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Days</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="metric-box">
-                            <div class="metric-value font-monospace" style="font-size:1.2rem;">${parseFloat(data.day_count_factor).toFixed(10)}</div>
-                            <div class="metric-label">Day Count Factor</div>
-                        </div>
+                    <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                        <div class="tabular font-mono text-base font-bold text-ink" dir="ltr">${parseFloat(data.day_count_factor).toFixed(10)}</div>
+                        <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Day Count Factor</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="metric-box">
-                            <div class="metric-value font-monospace">${data.interest_amount ? '$' + parseFloat(data.interest_amount).toFixed(2) : 'N/A'}</div>
-                            <div class="metric-label">Interest Amount</div>
-                        </div>
+                    <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                        <div class="tabular font-mono text-xl font-bold text-ink" dir="ltr">${data.interest_amount ? '$' + parseFloat(data.interest_amount).toFixed(2) : 'N/A'}</div>
+                        <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Interest Amount</div>
                     </div>
                 </div>
             `;
 
             if (data.calculation_steps && data.calculation_steps.length > 0) {
-                html += `<h6 class="fw-bold mb-3" style="color:#0f172a;">Calculation Steps</h6><div class="accordion" id="stepsAccordion">`;
+                html += `<h3 class="mb-3 text-sm font-bold text-ink">Calculation Steps</h3><div class="space-y-2">`;
                 data.calculation_steps.forEach((step, i) => {
                     html += `
-                        <div class="accordion-item border mb-2" style="border-radius:.5rem;overflow:hidden;">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button ${i === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#step${i}" style="font-size:.875rem;">
-                                    <span class="step-number me-2">${i + 1}</span>${step.title}
-                                    ${step.applied ? '<span class="badge badge-gold ms-2">Applied</span>' : ''}
-                                </button>
-                            </h2>
-                            <div id="step${i}" class="accordion-collapse collapse ${i === 0 ? 'show' : ''}">
-                                <div class="accordion-body">
-                                    <p style="font-size:.85rem;color:#475569;">${step.description}</p>
-                                    <div class="formula-block">${step.formula}</div>
-                                </div>
+                        <details class="overflow-hidden rounded-lg border border-line" ${i === 0 ? 'open' : ''}>
+                            <summary class="flex cursor-pointer items-center gap-2 bg-surface-muted px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-light">
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand">${i + 1}</span>
+                                <span>${step.title}</span>
+                                ${step.applied ? '<span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-0.5 text-[0.7rem] font-bold text-gold-dark">Applied</span>' : ''}
+                            </summary>
+                            <div class="border-t border-line px-4 py-3">
+                                <p class="mb-2 text-sm text-ink-soft">${step.description}</p>
+                                <div class="rounded-lg border-l-4 border-gold bg-ink px-3.5 py-2.5 font-mono text-xs leading-relaxed text-gold" dir="ltr">${step.formula}</div>
                             </div>
-                        </div>
+                        </details>
                     `;
                 });
                 html += '</div>';
             }
 
             content.innerHTML = html;
-            modal.show();
+            window.dispatchEvent(new CustomEvent('open-details-modal'));
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error loading calculation details');
+            notify('Error loading calculation details', false);
         });
     }
 
@@ -221,8 +230,7 @@
         document.getElementById('edit_notes').value = notes || '';
         document.getElementById('edit_is_favorite').checked = isFavorite;
 
-        const modal = new bootstrap.Modal(document.getElementById('editSavedCalculationModal'));
-        modal.show();
+        window.dispatchEvent(new CustomEvent('open-edit-modal'));
     }
 
     function toggleFavorite(savedId) {
@@ -236,19 +244,20 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Tab membership (All vs Favorites) is server-rendered, so refresh.
                 location.reload();
             } else {
-                alert('Error toggling favorite');
+                notify('Error toggling favorite', false);
             }
         })
         .catch(error => console.error('Error:', error));
     }
 
     function deleteSavedCalculation(savedId, name) {
-        if (!confirm(`Are you sure you want to delete "${name}"?`)) {
-            return;
-        }
+        window.dispatchEvent(new CustomEvent('confirm-delete', { detail: { id: savedId, name: name } }));
+    }
 
+    function performDelete(savedId) {
         fetch(`/api/saved-calculations/${savedId}`, {
             method: 'DELETE',
             headers: {
@@ -259,9 +268,21 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                // Remove the card(s) from both tab panes and update the counts.
+                const cards = document.querySelectorAll(`[data-saved-id="${savedId}"]`);
+                const wasFavorite = cards.length && cards[0].dataset.favorite === '1';
+                cards.forEach(el => el.remove());
+
+                const countAll = document.getElementById('countAll');
+                if (countAll) countAll.textContent = Math.max(0, parseInt(countAll.textContent, 10) - 1);
+                if (wasFavorite) {
+                    const countFav = document.getElementById('countFav');
+                    if (countFav) countFav.textContent = Math.max(0, parseInt(countFav.textContent, 10) - 1);
+                }
+
+                notify('Calculation deleted.');
             } else {
-                alert('Error deleting calculation');
+                notify('Error deleting calculation', false);
             }
         })
         .catch(error => console.error('Error:', error));
@@ -291,9 +312,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Name/notes/favorite state are server-rendered in both tabs, so refresh.
                     location.reload();
                 } else {
-                    alert('Error updating calculation');
+                    notify('Error updating calculation', false);
                 }
             })
             .catch(error => console.error('Error:', error));

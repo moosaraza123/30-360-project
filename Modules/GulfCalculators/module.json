@@ -1,0 +1,11 @@
+{
+    "name": "GulfCalculators",
+    "alias": "gulfcalculators",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GulfCalculators\\Providers\\GulfCalculatorsServiceProvider"
+    ],
+    "files": []
+}

@@ -1,11 +1,35 @@
-# Project Progress Log — 30/360 Day Count Calculator
+# Project Progress Log — GCC Finance Calculators Platform (formerly 30/360 Calculator)
 
 *Last updated: 2026-07-24 · Companion doc: [MVP-PLAN.md](MVP-PLAN.md) (monetization roadmap)*
+
+> **STRATEGY PIVOT (2026-07-24, user-confirmed):** this codebase becomes a **GCC finance
+> calculators platform** — UAE + KSA only, Arabic + English (RTL). The day-count
+> calculator is the first module, not the brand. 30360calculator.com was NOT purchased;
+> platform domain TBD (shortlist checked: gulfcalculator.com, hisabi.com, khaleejcalc.com
+> all showed no DNS). Build order: gratuity UAE/KSA → VAT (15%/5%) → **zakat by Dec 2026**
+> (Ramadan ~Feb 2027 traffic) → salary/loan (lead-gen) → sukuk suite. Target $1–2k/mo at
+> 12–18 months via GCC ads + lead-gen + B2B. Next structural work: Arabic i18n + RTL
+> layer, then gratuity module. TenderIQ (separate repo) noted as the faster-revenue asset.
 
 This file is the session-to-session continuation point. Read it top-to-bottom before
 resuming work.
 
 ---
+
+> **PLATFORM BUILD COMPLETE (2026-07-24, second work session):** Phases A–C of
+> PLATFORM-PLAN.md implemented in one pass. New: Tailwind design system (ink/teal/gold
+> tokens, IBM Plex Sans + Arabic), `layouts/platform.blade.php` shell, public bilingual
+> homepage at `/` and `/ar` (dashboard moved to `/dashboard`), SetLocale middleware
+> (/ar prefix → RTL Arabic, ~100 translated strings in lang/ar.json), and the
+> **GulfCalculators module**: Gratuity UAE (Art. 51 + 2yr cap), Gratuity KSA
+> (Arts. 84–85 + resignation fractions), VAT UAE/KSA, Zakat (85g-gold nisab, config
+> defaults in Modules/GulfCalculators/config/config.php — update gold prices
+> periodically). All day-count pages converted from Bootstrap to the design system
+> (no inline styles / alert() / Bootstrap modals — Alpine toasts+modals). Sitemap
+> covers everything EN+AR with hreflang. **Suite: 99 tests / 257 assertions green.**
+> Remaining before deploy: buy hisabi.com, Arabic native-speaker copy review,
+> privacy/terms pages, admin panel still on old Bootstrap master layout (fine),
+> zakat gold-price API (roadmap).
 
 ## 1. Current state (TL;DR)
 

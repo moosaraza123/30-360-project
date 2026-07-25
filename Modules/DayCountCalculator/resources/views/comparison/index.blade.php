@@ -1,128 +1,123 @@
-@extends('daycountcalculator::layouts.master')
+@extends('layouts.platform')
 
 @section('title', 'Comparison Tool')
+@section('meta_description', 'Compare all day count conventions side-by-side with identical dates — days, day count factors and interest amounts, with charts and PDF, Excel or CSV export.')
 
 @section('content')
+<div class="mx-auto max-w-content px-4 py-10 sm:px-6">
 
-{{-- Page Hero --}}
-<div class="page-hero">
-    <div class="container">
-        <div class="hero-badge">Side-by-Side Analysis</div>
-        <h1 class="mb-1">Convention <span class="gold-accent">Comparison</span> Tool</h1>
-        <p class="lead">Compare multiple day count conventions with identical dates</p>
+    {{-- Page header --}}
+    <div class="mb-8">
+        <span class="inline-block rounded-full bg-brand-light px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">Side-by-Side Analysis</span>
+        <h1 class="mt-3 text-2xl font-bold text-ink sm:text-3xl">Convention <span class="text-gold">Comparison</span> Tool</h1>
+        <p class="mt-2 text-ink-faint">Compare multiple day count conventions with identical dates</p>
     </div>
-</div>
 
-<div class="container pb-5">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-            <form id="comparisonForm" action="{{ route('comparison.calculate') }}" method="POST">
-                @csrf
+    <div class="card mb-6 p-6 sm:p-8">
+        <form id="comparisonForm" action="{{ route('comparison.calculate') }}" method="POST">
+            @csrf
 
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <label for="start_date" class="form-label fw-semibold" style="font-size:.875rem;">
-                            Start Date <span class="text-danger">*</span>
+            <div class="mb-6 grid gap-4 md:grid-cols-3">
+                <div>
+                    <label for="start_date" class="field-label">Start Date <span class="text-red-600">*</span></label>
+                    <input type="date" id="start_date" name="start_date"
+                           value="{{ old('start_date') }}" required
+                           class="field-input @error('start_date') border-red-400 @enderror" dir="ltr">
+                    @error('start_date')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label for="end_date" class="field-label">End Date <span class="text-red-600">*</span></label>
+                    <input type="date" id="end_date" name="end_date"
+                           value="{{ old('end_date') }}" required
+                           class="field-input @error('end_date') border-red-400 @enderror" dir="ltr">
+                    @error('end_date')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="btn-primary w-full" id="compareBtn">
+                        <svg id="compareSpinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"/>
+                        </svg>
+                        Compare All
+                    </button>
+                </div>
+            </div>
+
+            {{-- Optional Interest --}}
+            <div class="mb-6 rounded-lg border border-line bg-surface-muted p-4">
+                <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink">
+                    Interest Calculation
+                    <span class="ml-1 font-normal normal-case tracking-normal text-ink-faint">Optional</span>
+                </h2>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="principal" class="field-label">Principal Amount ($)</label>
+                        <input type="number" id="principal" name="principal" step="0.01" min="0"
+                               placeholder="e.g. 1,000,000" value="{{ old('principal') }}"
+                               class="field-input @error('principal') border-red-400 @enderror" dir="ltr">
+                        @error('principal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label for="interest_rate" class="field-label">Interest Rate (%)</label>
+                        <input type="number" id="interest_rate" name="interest_rate" step="0.001" min="0" max="100"
+                               placeholder="e.g. 5.5" value="{{ old('interest_rate') }}"
+                               class="field-input @error('interest_rate') border-red-400 @enderror" dir="ltr">
+                        @error('interest_rate')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- Convention Selection --}}
+            <div class="rounded-lg border border-line bg-surface-muted p-4">
+                <h2 class="mb-3 text-xs font-bold uppercase tracking-wider text-ink">
+                    Select Conventions
+                    <span class="ml-1 font-normal normal-case tracking-normal text-ink-faint">Leave blank for all</span>
+                </h2>
+                <div class="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    @foreach($conventions as $convention)
+                        <label class="flex items-center gap-2 text-sm text-ink" for="conv_{{ $loop->index }}">
+                            <input type="checkbox" name="conventions[]" value="{{ $convention }}"
+                                   id="conv_{{ $loop->index }}"
+                                   class="h-4 w-4 rounded border-line text-brand focus:ring-brand">
+                            {{ $convention }}
                         </label>
-                        <input type="date"
-                               class="form-control form-control-lg @error('start_date') is-invalid @enderror"
-                               id="start_date" name="start_date"
-                               value="{{ old('start_date') }}" required
-                               style="border-color:#e2e8f0;border-radius:.5rem;">
-                        @error('start_date')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-4">
-                        <label for="end_date" class="form-label fw-semibold" style="font-size:.875rem;">
-                            End Date <span class="text-danger">*</span>
-                        </label>
-                        <input type="date"
-                               class="form-control form-control-lg @error('end_date') is-invalid @enderror"
-                               id="end_date" name="end_date"
-                               value="{{ old('end_date') }}" required
-                               style="border-color:#e2e8f0;border-radius:.5rem;">
-                        @error('end_date')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold d-block" style="font-size:.875rem;">&nbsp;</label>
-                        <button type="submit" class="btn btn-gold btn-lg w-100" id="compareBtn">
-                            <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
-                            <i class="bi bi-bar-chart me-2"></i>Compare All
-                        </button>
-                    </div>
+                    @endforeach
                 </div>
-
-                {{-- Optional Interest --}}
-                <div class="rounded-3 p-3 mb-4" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                    <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">
-                        Interest Calculation
-                        <span class="fw-normal ms-1" style="color:#94a3b8;font-size:.78rem;text-transform:none;letter-spacing:0;">Optional</span>
-                    </h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="principal" class="form-label" style="font-size:.875rem;">Principal Amount ($)</label>
-                            <input type="number" class="form-control @error('principal') is-invalid @enderror"
-                                   id="principal" name="principal" step="0.01" min="0"
-                                   placeholder="e.g. 1,000,000" value="{{ old('principal') }}"
-                                   style="border-color:#e2e8f0;border-radius:.5rem;">
-                            @error('principal') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="interest_rate" class="form-label" style="font-size:.875rem;">Interest Rate (%)</label>
-                            <input type="number" class="form-control @error('interest_rate') is-invalid @enderror"
-                                   id="interest_rate" name="interest_rate" step="0.001" min="0" max="100"
-                                   placeholder="e.g. 5.5" value="{{ old('interest_rate') }}"
-                                   style="border-color:#e2e8f0;border-radius:.5rem;">
-                            @error('interest_rate') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Convention Selection --}}
-                <div class="rounded-3 p-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                    <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;">
-                        Select Conventions
-                        <span class="fw-normal ms-1" style="color:#94a3b8;font-size:.78rem;text-transform:none;letter-spacing:0;">Leave blank for all</span>
-                    </h6>
-                    <div class="row g-2">
-                        @foreach($conventions as $convention)
-                            <div class="col-md-4 col-lg-3">
-                                <div class="form-check">
-                                    <input class="form-check-input comparison-convention-check" type="checkbox"
-                                           name="conventions[]" value="{{ $convention }}"
-                                           id="conv_{{ $loop->index }}"
-                                           style="accent-color:var(--gold);">
-                                    <label class="form-check-label" for="conv_{{ $loop->index }}" style="font-size:.85rem;">
-                                        {{ $convention }}
-                                    </label>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
     {{-- Results Placeholder --}}
     <div id="comparisonResults"></div>
 </div>
+
+{{-- Toast --}}
+<div x-data="{ show: false, msg: '', ok: true }"
+     x-on:toast.window="msg = $event.detail.msg; ok = $event.detail.ok ?? true; show = true; clearTimeout($el._t); $el._t = setTimeout(() => show = false, 3500)"
+     x-show="show" x-cloak x-transition.opacity
+     class="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-card-hover"
+     :class="ok ? 'bg-ink' : 'bg-red-600'">
+    <span x-text="msg"></span>
+</div>
 @endsection
 
 @push('scripts')
+{{-- Module bundle: provides window.Chart (Chart.js) for the comparison chart --}}
+@vite(['Modules/DayCountCalculator/resources/assets/js/app.js'])
 <script>
+    function notify(msg, ok = true) {
+        window.dispatchEvent(new CustomEvent('toast', { detail: { msg, ok } }));
+    }
+
     document.getElementById('comparisonForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const btn = document.getElementById('compareBtn');
-        const spinner = btn.querySelector('.spinner-border');
+        const spinner = document.getElementById('compareSpinner');
         btn.disabled = true;
-        spinner.classList.remove('d-none');
+        spinner.classList.remove('hidden');
 
         const formData = new FormData(this);
 
@@ -139,16 +134,16 @@
             if (data.success) {
                 displayComparisonResults(data.comparison);
             } else {
-                alert('Error: ' + (data.message || 'Unknown error'));
+                notify('Error: ' + (data.message || 'Unknown error'), false);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while processing the comparison.');
+            notify('An error occurred while processing the comparison.', false);
         })
         .finally(() => {
             btn.disabled = false;
-            spinner.classList.add('d-none');
+            spinner.classList.add('hidden');
         });
     });
 
@@ -156,35 +151,33 @@
         const resultsDiv = document.getElementById('comparisonResults');
 
         let html = `
-            <div class="card shadow-sm">
-                <div class="card-header-navy p-3 d-flex align-items-center justify-content-between">
-                    <div>
-                        <h5 class="mb-0 fw-bold">Comparison Results</h5>
-                        <small style="color:rgba(255,255,255,.6);">From ${comparison.start_date} to ${comparison.end_date}</small>
-                    </div>
+            <div class="card overflow-hidden">
+                <div class="border-b border-line bg-brand px-5 py-4">
+                    <h2 class="text-base font-bold text-white">Comparison Results</h2>
+                    <div class="text-xs text-white/60" dir="ltr">From ${comparison.start_date} to ${comparison.end_date}</div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="table-responsive mb-4">
-                        <table class="table comparison-results-table table-hover mb-0">
-                            <thead>
+                <div class="p-5 sm:p-6">
+                    <div class="mb-6 overflow-x-auto rounded-lg border border-line">
+                        <table class="min-w-full divide-y divide-line text-sm">
+                            <thead class="bg-surface-muted">
                                 <tr>
-                                    <th>Convention</th>
-                                    <th class="text-end">Days</th>
-                                    <th class="text-end">Day Count Factor</th>
-                                    ${comparison.principal ? '<th class="text-end">Interest Amount</th>' : ''}
+                                    <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-ink-faint">Convention</th>
+                                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-ink-faint">Days</th>
+                                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-ink-faint">Day Count Factor</th>
+                                    ${comparison.principal ? '<th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-ink-faint">Interest Amount</th>' : ''}
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-line bg-white">
         `;
 
         const results = Object.values(comparison.results);
         results.forEach(result => {
             html += `
-                <tr>
-                    <td><strong style="color:#0f172a;">${result.convention_type}</strong></td>
-                    <td class="text-end font-monospace"><span class="badge badge-gold">${result.days}</span></td>
-                    <td class="text-end font-monospace">${result.day_count_factor_formatted}</td>
-                    ${result.interest_amount !== null ? `<td class="text-end font-monospace">${result.interest_amount_formatted}</td>` : ''}
+                <tr class="hover:bg-surface-muted">
+                    <td class="px-4 py-3 font-semibold text-ink">${result.convention_type}</td>
+                    <td class="tabular px-4 py-3 text-right font-mono"><span class="rounded-full bg-gold/10 px-2.5 py-0.5 text-xs font-bold text-gold-dark">${result.days}</span></td>
+                    <td class="tabular px-4 py-3 text-right font-mono text-ink">${result.day_count_factor_formatted}</td>
+                    ${result.interest_amount !== null ? `<td class="tabular px-4 py-3 text-right font-mono text-ink">${result.interest_amount_formatted}</td>` : ''}
                 </tr>
             `;
         });
@@ -194,56 +187,40 @@
                         </table>
                     </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-                            <div class="metric-box">
-                                <div class="metric-value">${comparison.statistics.min_days}</div>
-                                <div class="metric-label">Min Days</div>
-                            </div>
+                    <div class="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+                        <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                            <div class="tabular font-mono text-2xl font-bold text-ink">${comparison.statistics.min_days}</div>
+                            <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Min Days</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="metric-box">
-                                <div class="metric-value">${comparison.statistics.max_days}</div>
-                                <div class="metric-label">Max Days</div>
-                            </div>
+                        <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                            <div class="tabular font-mono text-2xl font-bold text-ink">${comparison.statistics.max_days}</div>
+                            <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Max Days</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="metric-box">
-                                <div class="metric-value">${comparison.statistics.days_range}</div>
-                                <div class="metric-label">Days Range</div>
-                            </div>
+                        <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                            <div class="tabular font-mono text-2xl font-bold text-ink">${comparison.statistics.days_range}</div>
+                            <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Days Range</div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="metric-box">
-                                <div class="metric-value">${Object.keys(comparison.results).length}</div>
-                                <div class="metric-label">Conventions</div>
-                            </div>
+                        <div class="rounded-lg border border-line bg-surface-muted p-4 text-center">
+                            <div class="tabular font-mono text-2xl font-bold text-ink">${Object.keys(comparison.results).length}</div>
+                            <div class="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">Conventions</div>
                         </div>
                     </div>
 
-                    <div class="card border-0 rounded-3 mb-4" style="background:#f8fafc;">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-3" style="color:#0f172a;font-size:.875rem;">Visual Comparison</h6>
-                            <canvas id="comparisonChart" height="80"></canvas>
-                        </div>
+                    <div class="mb-6 rounded-lg border border-line bg-surface-muted p-4">
+                        <h3 class="mb-3 text-sm font-bold text-ink">Visual Comparison</h3>
+                        <canvas id="comparisonChart" height="80"></canvas>
                     </div>
 
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-danger w-100" onclick="exportComparison('pdf')">
-                                <i class="bi bi-file-pdf me-1"></i> Export PDF
-                            </button>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-gold w-100" onclick="exportComparison('excel')">
-                                <i class="bi bi-file-excel me-1"></i> Export Excel
-                            </button>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-outline-gold w-100" onclick="exportComparison('csv')">
-                                <i class="bi bi-file-text me-1"></i> Export CSV
-                            </button>
-                        </div>
+                    <div class="grid gap-2 sm:grid-cols-3">
+                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50" onclick="exportComparison('pdf')">
+                            Export PDF
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="exportComparison('excel')">
+                            Export Excel
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="exportComparison('csv')">
+                            Export CSV
+                        </button>
                     </div>
                 </div>
             </div>
@@ -302,7 +279,7 @@
 
     function exportComparison(format) {
         if (!window.comparisonData) {
-            alert('No comparison data available');
+            notify('No comparison data available', false);
             return;
         }
 

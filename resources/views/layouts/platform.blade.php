@@ -35,6 +35,8 @@
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ config('daycountcalculator.adsense_client') }}" crossorigin="anonymous"></script>
     @endif
 
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>

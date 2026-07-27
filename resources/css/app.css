@@ -72,3 +72,23 @@
             leading-relaxed text-ink-soft;
     }
 }
+
+/* Print: when a calculation result is on the page, print only the result card.
+   Everything outside <main> (nav, footer) is removed, and inside <main> every
+   element that is not the card, inside the card, or an ancestor of it is
+   removed — so the card prints alone with no trailing blank pages. */
+@media print {
+    body:has(#resultsCard) > *:not(main) {
+        display: none !important;
+    }
+
+    body:has(#resultsCard) main *:not(#resultsCard):not(#resultsCard *):not(:has(#resultsCard)) {
+        display: none !important;
+    }
+
+    #resultsCard {
+        box-shadow: none;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

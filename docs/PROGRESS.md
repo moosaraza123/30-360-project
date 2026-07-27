@@ -11,6 +11,33 @@
 > 12–18 months via GCC ads + lead-gen + B2B. Next structural work: Arabic i18n + RTL
 > layer, then gratuity module. TenderIQ (separate repo) noted as the faster-revenue asset.
 
+> **PROD-READY BATCH (2026-07-24, third work session):** Tier 1 calculators added —
+> **GOSI/Net Salary KSA** (9.75%/11.75%/2%, 45k cap), **Take-Home Salary UAE** (GPSSA
+> 5%/11% by joining date), **Loan/EMI** (flat vs reducing with APR-equivalent solver).
+> Nav restructured with category dropdowns. Production readiness complete:
+> **privacy-policy + terms pages** (AdSense gate), `calculations:prune-pii` command
+> scheduled daily 03:15 (90-day IP retention), all transactional emails now
+> `ShouldQueue` (queue worker REQUIRED in prod — DEPLOY.md §6), robots.txt has the
+> sitemap directive, live gold price via metalpriceapi (GOLD_API_KEY in .env).
+> **Suite: 122 tests / 319 assertions green.** 8 calculators × EN/AR live.
+> Deferred by triage decision (see chat 2026-07-24): Tier 2 seller pack (noon/Amazon.sa
+> profit), Tier 3 property (rental yield), Tier 4 AR-only business set; generic
+> percentage/discount calcs SKIPPED (commodity SERPs, thin-content risk).
+
+> **HIGH-CPC EXPANSION (2026-07-27, fourth work session):** six calculators added after
+> SERP/CPC research (all facts source-verified in-session): **Iqama Renewal Fees KSA**
+> (650/yr + levy 700–800/mo + dependents 400/mo, employer-vs-employee split),
+> **Visa Overstay Fine UAE** (AED 50/day unified, grace 0/30/180 by visa type),
+> **Corporate Tax UAE** (0%/9% at 375k + Small Business Relief ≤3M until 31 Dec 2026 —
+> timed traffic driver), **Mortgage Affordability UAE** (CBUAE: 50% DBR + 7×/8× income
+> cap + LTV 80/85/70/75/60/65 piecewise), **Personal Loan Eligibility UAE** (20× salary,
+> 48mo, 50% DBR), **RETT KSA** (5%, first-home relief 1M). Nav regrouped: Salary / Tax /
+> Loans / Residency dropdowns. **14 calculators × EN/AR = 28 indexable pages + day-count
+> suite; sitemap 41 URLs. Suite: 171 tests / 452 assertions green.**
+> Also this session: print button now prints only the results card (print CSS in
+> app.css), saved-calculations JSON API implemented (view/edit/delete/favorite with
+> ownership checks — routes had been missing), dead GulfCalculators API scaffold removed.
+
 This file is the session-to-session continuation point. Read it top-to-bottom before
 resuming work.
 

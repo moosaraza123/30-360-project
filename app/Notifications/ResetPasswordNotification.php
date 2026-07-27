@@ -3,11 +3,11 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\HtmlString;
 
-class ResetPasswordNotification extends Notification
+class ResetPasswordNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,12 +26,12 @@ class ResetPasswordNotification extends Notification
         ], false));
 
         return (new MailMessage)
-            ->subject('Reset Your Password — ' . config('app.name'))
+            ->subject('Reset Your Password — '.config('app.name'))
             ->view('auth.emails.reset-password', [
                 'resetUrl' => $resetUrl,
                 'userName' => $notifiable->name,
-                'appName'  => config('app.name'),
-                'expireMinutes' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60),
+                'appName' => config('app.name'),
+                'expireMinutes' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60),
             ]);
     }
 }

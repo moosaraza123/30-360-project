@@ -6,11 +6,65 @@
                 <span class="text-lg font-bold text-ink">{{ __('Hisabi') }}</span>
             </a>
 
+            @php $ar = app()->getLocale() === 'ar' ? 'ar/' : ''; @endphp
             <div class="hidden items-center gap-1 md:flex">
-                @php $ar = app()->getLocale() === 'ar' ? 'ar/' : ''; @endphp
-                <a href="{{ url($ar.'gratuity-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Gratuity UAE') }}</a>
-                <a href="{{ url($ar.'end-of-service-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Gratuity KSA') }}</a>
-                <a href="{{ url($ar.'vat-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('VAT') }}</a>
+                {{-- Salary & end of service dropdown --}}
+                <div class="relative" x-data="{ dd: false }" @click.outside="dd = false" @keydown.escape.window="dd = false">
+                    <button class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink"
+                            @click="dd = !dd" :aria-expanded="dd">
+                        {{ __('Salary') }}
+                        <svg class="h-3.5 w-3.5 text-ink-faint" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="absolute start-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-card-hover" x-show="dd" x-transition.opacity x-cloak>
+                        <a href="{{ url($ar.'gosi-calculator-saudi-arabia') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('GOSI & Net Salary — KSA') }}</a>
+                        <a href="{{ url($ar.'salary-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Take-Home Salary — UAE') }}</a>
+                        <a href="{{ url($ar.'gratuity-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Gratuity UAE') }}</a>
+                        <a href="{{ url($ar.'end-of-service-calculator-saudi-arabia') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Gratuity KSA') }}</a>
+                    </div>
+                </div>
+
+                {{-- Tax dropdown --}}
+                <div class="relative" x-data="{ dd: false }" @click.outside="dd = false" @keydown.escape.window="dd = false">
+                    <button class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink"
+                            @click="dd = !dd" :aria-expanded="dd">
+                        {{ __('Tax') }}
+                        <svg class="h-3.5 w-3.5 text-ink-faint" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="absolute start-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-card-hover" x-show="dd" x-transition.opacity x-cloak>
+                        <a href="{{ url($ar.'vat-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('VAT Calculator — UAE (5%)') }}</a>
+                        <a href="{{ url($ar.'vat-calculator-saudi-arabia') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('VAT Calculator — Saudi Arabia (15%)') }}</a>
+                        <a href="{{ url($ar.'corporate-tax-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Corporate Tax — UAE (9%)') }}</a>
+                        <a href="{{ url($ar.'rett-calculator-saudi-arabia') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Real Estate Tax (RETT) — KSA') }}</a>
+                    </div>
+                </div>
+
+                {{-- Loans dropdown --}}
+                <div class="relative" x-data="{ dd: false }" @click.outside="dd = false" @keydown.escape.window="dd = false">
+                    <button class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink"
+                            @click="dd = !dd" :aria-expanded="dd">
+                        {{ __('Loans') }}
+                        <svg class="h-3.5 w-3.5 text-ink-faint" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="absolute start-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-card-hover" x-show="dd" x-transition.opacity x-cloak>
+                        <a href="{{ url($ar.'loan-calculator') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Loan & EMI') }}</a>
+                        <a href="{{ url($ar.'mortgage-affordability-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Mortgage Affordability — UAE') }}</a>
+                        <a href="{{ url($ar.'personal-loan-eligibility-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Personal Loan Eligibility — UAE') }}</a>
+                    </div>
+                </div>
+
+                {{-- Residency dropdown --}}
+                <div class="relative" x-data="{ dd: false }" @click.outside="dd = false" @keydown.escape.window="dd = false">
+                    <button class="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink"
+                            @click="dd = !dd" :aria-expanded="dd">
+                        {{ __('Residency') }}
+                        <svg class="h-3.5 w-3.5 text-ink-faint" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="absolute start-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-white py-1.5 shadow-card-hover" x-show="dd" x-transition.opacity x-cloak>
+                        <a href="{{ url($ar.'iqama-fees-calculator-saudi-arabia') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Iqama Fees — KSA') }}</a>
+                        <a href="{{ url($ar.'overstay-fine-calculator-uae') }}" class="block px-4 py-2 text-sm text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Overstay Fine — UAE') }}</a>
+                    </div>
+                </div>
+
                 <a href="{{ url($ar.'zakat-calculator') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Zakat') }}</a>
                 <a href="{{ route('calculator.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted hover:text-ink">{{ __('Professional') }}</a>
             </div>
@@ -68,9 +122,24 @@
         {{-- Mobile menu --}}
         <div class="border-t border-line px-4 py-3 md:hidden" x-show="open" x-cloak>
             <div class="flex flex-col gap-1">
+                <p class="px-3 pt-1 text-xs font-bold uppercase tracking-wider text-ink-faint">{{ __('Salary') }}</p>
+                <a href="{{ url($ar.'gosi-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('GOSI & Net Salary — KSA') }}</a>
+                <a href="{{ url($ar.'salary-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Take-Home Salary — UAE') }}</a>
                 <a href="{{ url($ar.'gratuity-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Gratuity UAE') }}</a>
                 <a href="{{ url($ar.'end-of-service-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Gratuity KSA') }}</a>
-                <a href="{{ url($ar.'vat-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('VAT') }}</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-ink-faint">{{ __('Tax') }}</p>
+                <a href="{{ url($ar.'vat-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('VAT Calculator — UAE (5%)') }}</a>
+                <a href="{{ url($ar.'vat-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('VAT Calculator — Saudi Arabia (15%)') }}</a>
+                <a href="{{ url($ar.'corporate-tax-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Corporate Tax — UAE (9%)') }}</a>
+                <a href="{{ url($ar.'rett-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Real Estate Tax (RETT) — KSA') }}</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-ink-faint">{{ __('Loans') }}</p>
+                <a href="{{ url($ar.'loan-calculator') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Loan & EMI') }}</a>
+                <a href="{{ url($ar.'mortgage-affordability-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Mortgage Affordability — UAE') }}</a>
+                <a href="{{ url($ar.'personal-loan-eligibility-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Personal Loan Eligibility — UAE') }}</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-ink-faint">{{ __('Residency') }}</p>
+                <a href="{{ url($ar.'iqama-fees-calculator-saudi-arabia') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Iqama Fees — KSA') }}</a>
+                <a href="{{ url($ar.'overstay-fine-calculator-uae') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Overstay Fine — UAE') }}</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-ink-faint">{{ __('More') }}</p>
                 <a href="{{ url($ar.'zakat-calculator') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Zakat') }}</a>
                 <a href="{{ route('calculator.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft hover:bg-surface-muted">{{ __('Professional') }}</a>
 

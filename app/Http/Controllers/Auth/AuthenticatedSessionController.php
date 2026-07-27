@@ -28,7 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect(route('calculator.index', absolute: false));
+        // Honor the page the user was originally heading to (e.g. saved
+        // calculations behind the auth wall); otherwise land on the homepage.
+        return redirect()->intended('/');
     }
 
     /**

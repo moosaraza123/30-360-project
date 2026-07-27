@@ -3,6 +3,7 @@
 namespace Modules\DayCountCalculator\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -15,7 +16,7 @@ use Modules\DayCountCalculator\Entities\Subscriber;
  *
  * Email sent to verify subscriber's email address
  */
-class VerifySubscriptionMail extends Mailable
+class VerifySubscriptionMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

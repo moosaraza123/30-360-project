@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'home')->name('home');
 Route::view('/ar', 'home')->name('home.ar');
 
+// Legal pages (AdSense prerequisite)
+Route::view('/privacy-policy', 'legal.privacy')->name('legal.privacy');
+Route::view('/terms', 'legal.terms')->name('legal.terms');
+
 // Authenticated user dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');

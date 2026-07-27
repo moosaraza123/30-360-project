@@ -43,7 +43,9 @@ class DayCountCalculatorServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\DayCountCalculator\Console\PruneCalculationPii::class,
+        ]);
     }
 
     /**

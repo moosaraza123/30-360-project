@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\DayCountCalculator\Http\Controllers\CalculatorController;
 use Modules\DayCountCalculator\Http\Controllers\ComparisonController;
+use Modules\DayCountCalculator\Http\Controllers\SavedCalculationController;
 use Modules\DayCountCalculator\Http\Controllers\SubscriberController;
 use Modules\DayCountCalculator\Http\Controllers\AdminController;
 use Modules\DayCountCalculator\Http\Controllers\SitemapController;
@@ -46,6 +47,16 @@ Route::prefix('calculator')->name('calculator.')->group(function () {
         Route::post('/save/{calculationId}', [CalculatorController::class, 'save'])->name('save');
         Route::get('/saved', [CalculatorController::class, 'savedCalculations'])->name('saved');
     });
+});
+
+// Session-authenticated JSON endpoints used by the Saved Calculations page.
+// These live in web routes (not routes/api.php) because they rely on the
+// session cookie + CSRF token, not API tokens.
+Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+    Route::get('/calculations/{calculationId}', [SavedCalculationController::class, 'showCalculation'])->name('calculations.show');
+    Route::put('/saved-calculations/{savedCalculationId}', [SavedCalculationController::class, 'update'])->name('saved-calculations.update');
+    Route::delete('/saved-calculations/{savedCalculationId}', [SavedCalculationController::class, 'destroy'])->name('saved-calculations.destroy');
+    Route::post('/saved-calculations/{savedCalculationId}/toggle-favorite', [SavedCalculationController::class, 'toggleFavorite'])->name('saved-calculations.toggle-favorite');
 });
 
 Route::prefix('comparison')->name('comparison.')->group(function () {

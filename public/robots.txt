@@ -17,3 +17,6 @@ Disallow: /calculator/calculate
 Disallow: /comparison/calculate
 Disallow: /comparison/export/
 Disallow: /subscribe
+
+# Sitemap
+Sitemap: https://hisabi.com/sitemap.xml

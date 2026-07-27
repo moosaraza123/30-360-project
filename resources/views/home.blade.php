@@ -23,10 +23,10 @@
 <section class="border-b border-line bg-white">
     <div class="mx-auto max-w-content px-4 py-16 text-center sm:px-6 sm:py-20">
         <h1 class="mx-auto max-w-2xl text-3xl font-bold leading-tight text-ink sm:text-5xl">
-            {{ __('Trusted financial calculators for the Gulf') }}
+            {{ __("The Gulf's trusted financial calculators") }}
         </h1>
         <p class="mx-auto mt-4 max-w-xl text-base text-ink-faint sm:text-lg">
-            {{ __('Accurate, source-cited calculators for salaries, taxes, zakat and fixed income — in English and Arabic.') }}
+            {{ __('Salary, end-of-service, VAT, zakat and financing — source-cited, step-by-step, in Arabic and English.') }}
         </p>
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a href="{{ url($p.'gratuity-calculator-uae') }}" class="btn-primary">{{ __('Gratuity UAE') }}</a>
@@ -45,6 +45,15 @@
             ['url' => $p.'vat-calculator-uae', 'title' => __('VAT Calculator — UAE (5%)'), 'desc' => __('Add or remove 5% VAT instantly.'), 'tag' => 'UAE'],
             ['url' => $p.'vat-calculator-saudi-arabia', 'title' => __('VAT Calculator — Saudi Arabia (15%)'), 'desc' => __('Add or remove 15% VAT instantly.'), 'tag' => 'KSA'],
             ['url' => $p.'zakat-calculator', 'title' => __('Zakat Calculator'), 'desc' => __('2.5% above the nisab — with a clear breakdown.'), 'tag' => __('Zakat')],
+            ['url' => $p.'gosi-calculator-saudi-arabia', 'title' => __('GOSI & Net Salary Calculator — Saudi Arabia'), 'desc' => __('Your GOSI deduction and net salary — 9.75% rate, 45k cap.'), 'tag' => 'KSA'],
+            ['url' => $p.'salary-calculator-uae', 'title' => __('Take-Home Salary Calculator — UAE'), 'desc' => __('No income tax; GPSSA pension rates for UAE nationals.'), 'tag' => 'UAE'],
+            ['url' => $p.'loan-calculator', 'title' => __('Loan & EMI Calculator — Flat vs Reducing Rate'), 'desc' => __('Monthly installments — and the true APR behind flat-rate offers.'), 'tag' => __('Loan')],
+            ['url' => $p.'iqama-fees-calculator-saudi-arabia', 'title' => __('Iqama Renewal Fees Calculator — Saudi Arabia'), 'desc' => __('Residency fee, work-permit levy and dependent fees — and who pays what.'), 'tag' => 'KSA'],
+            ['url' => $p.'overstay-fine-calculator-uae', 'title' => __('Visa Overstay Fine Calculator — UAE'), 'desc' => __('AED 50 per day — with residence-visa grace periods applied.'), 'tag' => 'UAE'],
+            ['url' => $p.'corporate-tax-calculator-uae', 'title' => __('Corporate Tax Calculator — UAE (9%)'), 'desc' => __('0% up to AED 375k, 9% above — with the Small Business Relief check.'), 'tag' => 'UAE'],
+            ['url' => $p.'mortgage-affordability-calculator-uae', 'title' => __('Mortgage Affordability Calculator — UAE'), 'desc' => __('Your maximum loan, property price and down payment under Central Bank rules.'), 'tag' => 'UAE'],
+            ['url' => $p.'personal-loan-eligibility-calculator-uae', 'title' => __('Personal Loan Eligibility Calculator — UAE'), 'desc' => __('20× salary cap, 48-month term, 50% DBR — how much you can borrow.'), 'tag' => 'UAE'],
+            ['url' => $p.'rett-calculator-saudi-arabia', 'title' => __('Real Estate Transaction Tax (RETT) Calculator — Saudi Arabia'), 'desc' => __('5% on property transactions — with first-home relief up to SAR 1M.'), 'tag' => 'KSA'],
         ] as $calc)
             <a href="{{ url($calc['url']) }}" class="card group p-6 transition hover:shadow-card-hover">
                 <span class="inline-block rounded-full bg-brand-light px-2.5 py-0.5 text-xs font-semibold text-brand-dark">{{ $calc['tag'] }}</span>

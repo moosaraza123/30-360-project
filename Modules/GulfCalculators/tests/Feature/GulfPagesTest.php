@@ -18,6 +18,15 @@ class GulfPagesTest extends TestCase
             ['vat-calculator-uae'],
             ['vat-calculator-saudi-arabia'],
             ['zakat-calculator'],
+            ['gosi-calculator-saudi-arabia'],
+            ['salary-calculator-uae'],
+            ['loan-calculator'],
+            ['iqama-fees-calculator-saudi-arabia'],
+            ['overstay-fine-calculator-uae'],
+            ['corporate-tax-calculator-uae'],
+            ['mortgage-affordability-calculator-uae'],
+            ['personal-loan-eligibility-calculator-uae'],
+            ['rett-calculator-saudi-arabia'],
         ];
     }
 
@@ -87,6 +96,123 @@ class GulfPagesTest extends TestCase
         ]);
 
         $response->assertOk()->assertSee('1,250.00');
+    }
+
+    public function test_gosi_calculation_round_trip(): void
+    {
+        $response = $this->post('/gosi-calculator-saudi-arabia', [
+            'basic_salary' => 10000,
+            'housing_allowance' => 2000,
+            'other_allowances' => 1000,
+            'nationality' => 'saudi',
+        ]);
+
+        // net = 13,000 − 1,170
+        $response->assertOk()->assertSee('11,830.00');
+    }
+
+    public function test_uae_salary_round_trip(): void
+    {
+        $response = $this->post('/ar/salary-calculator-uae', [
+            'gross_salary' => 20000,
+            'category' => 'national_post2023',
+        ]);
+
+        $response->assertOk()->assertSee('17,800.00');
+    }
+
+    public function test_loan_flat_round_trip_shows_apr_equivalent(): void
+    {
+        $response = $this->post('/loan-calculator', [
+            'currency' => 'SAR',
+            'principal' => 100000,
+            'annual_rate' => 5,
+            'months' => 24,
+            'method' => 'flat',
+        ]);
+
+        $response->assertOk()->assertSee('4,583.33')->assertSee('APR');
+    }
+
+    public function test_iqama_round_trip(): void
+    {
+        $response = $this->post('/iqama-fees-calculator-saudi-arabia', [
+            'months' => 12,
+            'worker_type' => 'company',
+            'saudization' => 'noncompliant',
+            'dependents' => 2,
+        ]);
+
+        // 650 + 9,600 + 9,600
+        $response->assertOk()->assertSee('19,850.00');
+    }
+
+    public function test_overstay_round_trip(): void
+    {
+        $response = $this->post('/ar/overstay-fine-calculator-uae', [
+            'visa_type' => 'tourist',
+            'expiry_date' => '2026-01-01',
+            'settlement_date' => '2026-01-11',
+        ]);
+
+        // 10 days × AED 50
+        $response->assertOk()->assertSee('500.00');
+    }
+
+    public function test_corporate_tax_round_trip(): void
+    {
+        $response = $this->post('/corporate-tax-calculator-uae', [
+            'revenue' => 5000000,
+            'taxable_income' => 500000,
+        ]);
+
+        // (500k − 375k) × 9%
+        $response->assertOk()->assertSee('11,250.00');
+    }
+
+    public function test_mortgage_round_trip(): void
+    {
+        $response = $this->post('/mortgage-affordability-calculator-uae', [
+            'monthly_income' => 30000,
+            'obligations' => 0,
+            'annual_rate' => 0,
+            'years' => 25,
+            'buyer' => 'national',
+            'property_type' => 'first',
+        ]);
+
+        // Income-multiple cap: 8 × 360,000 = 2.88M loan
+        $response->assertOk()->assertSee('2,880,000');
+    }
+
+    public function test_personal_loan_round_trip(): void
+    {
+        $response = $this->post('/ar/personal-loan-eligibility-calculator-uae', [
+            'monthly_salary' => 10000,
+            'obligations' => 0,
+            'annual_rate' => 0,
+            'months' => 48,
+        ]);
+
+        // 20 × 10,000 salary cap
+        $response->assertOk()->assertSee('200,000');
+    }
+
+    public function test_rett_round_trip(): void
+    {
+        $response = $this->post('/rett-calculator-saudi-arabia', [
+            'property_value' => 1500000,
+            'first_home' => 1,
+        ]);
+
+        // 5% × (1.5M − 1M relief)
+        $response->assertOk()->assertSee('25,000.00');
+    }
+
+    public function test_legal_pages_load(): void
+    {
+        $this->get('/privacy-policy')->assertOk()->assertSee('Privacy Policy');
+        $this->get('/terms')->assertOk()->assertSee('Terms of Use');
     }
 
     public function test_sitemap_includes_gulf_pages_in_both_languages(): void

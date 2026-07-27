@@ -29,7 +29,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('calculator.index', absolute: false));
+        $response->assertRedirect('/');
     }
 
     public function test_registration_sends_verification_email(): void

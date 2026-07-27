@@ -27,7 +27,22 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('calculator.index', absolute: false));
+        $response->assertRedirect('/');
+    }
+
+    public function test_login_redirects_to_the_originally_requested_page(): void
+    {
+        $user = User::factory()->create();
+
+        // Hitting an auth-only page as a guest stores it as the intended URL.
+        $this->get('/calculator/saved')->assertRedirect('/login');
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/calculator/saved');
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
